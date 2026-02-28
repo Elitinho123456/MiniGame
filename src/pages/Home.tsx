@@ -32,11 +32,8 @@ export default function Home() {
                         Craft & Mine é um clicker relaxante onde você coleta recursos da terra, melhora suas ferramentas e expande seu império de mineração.
                     </p>
 
-                    <button 
-                        className="btn-primary mt-4 text-lg"
-                        onClick={() => alert("Iniciando a mineração!")}>
-                        Começar a Minerar
-                    </button>
+                    <Link to="/game" title="Iniciar o jogo" onClick={() => alert("Iniciando a mineração!")} className="btn-primary mt-4 text-lg">Iniciar o Jogo</Link>
+                    
                 </section>
 
                 <div className="h-1 bg-stone-200 dark:bg-stone-800 w-full rounded-2xl mb-22" />

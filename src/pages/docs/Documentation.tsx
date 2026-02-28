@@ -28,13 +28,13 @@ export default function Documentation() {
 
             {/* Grid Principal */}
             <div className="flex-1 max-w-7xl w-full mx-auto grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8 p-4 md:p-8">
-                
+
                 {/* Sidebar (Menu de Navegação) */}
                 <aside className="md:col-span-1 flex flex-col space-y-4 border-r-0 md:border-r border-stone-200 dark:border-stone-800 pr-4">
-                    
+
                     {/* Categoria 1 */}
                     <div className="border border-stone-200 dark:border-stone-800 rounded-lg overflow-hidden">
-                        <button 
+                        <button
                             onClick={() => toggleMenu('basico')}
                             className="w-full text-left px-4 py-3 bg-stone-100 dark:bg-stone-900 font-semibold text-stone-800 dark:text-stone-200 flex justify-between items-center hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors"
                         >
@@ -52,7 +52,7 @@ export default function Documentation() {
 
                     {/* Categoria 2 */}
                     <div className="border border-stone-200 dark:border-stone-800 rounded-lg overflow-hidden">
-                        <button 
+                        <button
                             onClick={() => toggleMenu('mecanicas')}
                             className="w-full text-left px-4 py-3 bg-stone-100 dark:bg-stone-900 font-semibold text-stone-800 dark:text-stone-200 flex justify-between items-center hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors"
                         >
@@ -78,12 +78,12 @@ export default function Documentation() {
                         <p className="text-lg leading-relaxed mb-6">
                             Bem-vindo à documentação oficial do Craft & Mine. Aqui você encontrará tudo o que precisa para entender as mecânicas, desde a coleta do seu primeiro bloco de terra até a automatização avançada da sua mina espacial.
                         </p>
-                        
+
                         <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-10 mb-4 border-b border-stone-200 dark:border-stone-800 pb-2">
                             A Regra de Ouro
                         </h2>
                         <p className="mb-4">
-                            O objetivo principal é simples: <strong>clique para minerar</strong>. A cada clique, você acumula recursos que podem ser trocados por melhorias. 
+                            O objetivo principal é simples: <strong>clique para minerar</strong>. A cada clique, você acumula recursos que podem ser trocados por melhorias.
                         </p>
 
                         <div className="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 p-4 rounded-r-lg my-8">
