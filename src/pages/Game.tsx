@@ -1,34 +1,6 @@
 import { useState } from "react";
 // Mantenha suas importações de constantes do arquivo separado
-import { availableBlocks, dropMap } from "../assets/consts";
-
-// --- MODELO REPLICÁVEL DE UPGRADES ---
-// Criei esta estrutura para que você possa facilmente adicionar, balancear e alterar upgrades depois.
-interface UpgradeItem {
-    id: string;
-    name: string;
-    description: string;
-    costText: string; // Ex: "50 Cobblestone"
-    icon: string;     // Pode ser um emoji ou o caminho de uma imagem ex: "Anvil.webp"
-}
-
-const AVAILABLE_UPGRADES: UpgradeItem[] = [
-    {
-        id: "upg_1",
-        name: "Picareta de Pedra",
-        description: "Aumenta a chance de encontrar minérios valiosos.",
-        costText: "50 Cobblestone",
-        icon: "⛏️"
-    },
-    {
-        id: "upg_2",
-        name: "Pá Reforçada",
-        description: "Coleta 2x mais recursos de terra e areia.",
-        costText: "30 Dirt, 10 Oak Log",
-        icon: "🪏"
-    }
-];
-// --------------------------------------
+import { availableBlocks, dropMap, nameMap, availableUpgrades } from "../assets/consts";
 
 export default function Game() {
     // Estados do Jogo
@@ -41,8 +13,10 @@ export default function Game() {
         "Gravel": 0
     });
 
+    const name = nameMap[currentBlock]
+
     // Estados dos Menus (Upgrades começa aberto, Crafting fechado)
-    const [isUpgradesOpen, setIsUpgradesOpen] = useState<boolean>(true);
+    const [isUpgradesOpen, setIsUpgradesOpen] = useState<boolean>(false);
     const [isCraftingOpen, setIsCraftingOpen] = useState<boolean>(false);
 
     // Lógica de Mineração
@@ -96,7 +70,7 @@ export default function Game() {
                     </button>
                     
                     <p className="mt-8 font-bold text-stone-300 text-2xl md:text-3xl capitalize drop-shadow-lg">
-                        {currentBlock.replace("_", " ")}
+                        {name}
                     </p>
                     <p className="text-stone-400 mt-2 bg-black/50 px-3 py-1 rounded-lg text-sm">
                         Clique para quebrar!
@@ -106,12 +80,12 @@ export default function Game() {
 
 
             {/* LADO DIREITO: Painel de Gerenciamento (Inventário, Upgrades, Crafting) */}
-            <div className="w-full md:w-[400px] bg-stone-100 dark:bg-stone-950 flex flex-col h-[50vh] md:h-screen overflow-y-auto custom-scrollbar">
+            <div className="w-full md:w-100 bg-stone-100 dark:bg-stone-950 flex flex-col h-[50vh] md:h-screen overflow-y-auto custom-scrollbar">
                 
                 {/* 1. Inventário (Sempre visível no topo da barra lateral) */}
                 <div className="p-6 bg-stone-200 dark:bg-stone-900 border-b border-stone-300 dark:border-stone-800 sticky top-0 z-20 shadow-md">
                     <h3 className="text-xl font-extrabold text-stone-800 dark:text-stone-100 mb-4 flex items-center gap-2">
-                        🎒 Inventário
+                        <img src="/Backpack.png" alt="Backpack" className="w-8 h-8 rounded drop-shadow-sm" onError={(e) => e.currentTarget.style.display = 'none'} /> Inventário
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
                         {Object.entries(inventory).map(([resourceName, amount]) => (
@@ -138,7 +112,7 @@ export default function Game() {
                     
                     {isUpgradesOpen && (
                         <div className="p-4 bg-stone-50 dark:bg-stone-900/50 space-y-3">
-                            {AVAILABLE_UPGRADES.map(upgrade => (
+                            {availableUpgrades.map(upgrade => (
                                 <button 
                                     key={upgrade.id}
                                     className="w-full text-left bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-3 rounded-xl hover:border-amber-500 dark:hover:border-amber-500 transition-colors flex gap-3 group shadow-sm"
