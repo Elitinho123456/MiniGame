@@ -1,3 +1,6 @@
+export const BASE_INVENTORY_CAPACITY = 500;
+export const UPGRADE_STORAGE_BONUS = 100;
+
 // 1. Configuração de Dimensões e seus blocos (com peso/chance)
 export const dimensions: Record<
   string,
@@ -11,11 +14,11 @@ export const dimensions: Record<
     name: '🌲 Overworld',
     background: '/Overworld_Minecraft.webp',
     blocks: [
-      { name: 'Grass_Block', weight: 40 },
-      { name: 'Dirt', weight: 30 },
-      { name: 'Sand', weight: 20 },
+      { name: 'Grass_Block', weight: 30 },
+      { name: 'Dirt', weight: 25 },
+      { name: 'Sand', weight: 10 },
       { name: 'Gravel', weight: 10 },
-      { name: 'Oak_Log', weight: 5 },
+      { name: 'Oak_Log', weight: 20 },
       { name: 'Oak_Leaves', weight: 5 },
     ],
   },
@@ -133,7 +136,7 @@ export const toolChains: Record<string, any[]> = {
       id: 'pick_wood',
       name: 'Picareta de Madeira',
       cost: { 'Oak Log': 5 },
-      icon: '⛏️',
+      icon: './Wooden_Pickaxe.webp',
       speed: 2,
       maxDurability: 59,
       craftTime: 2,
@@ -142,7 +145,7 @@ export const toolChains: Record<string, any[]> = {
       id: 'pick_stone',
       name: 'Picareta de Pedra',
       cost: { Cobblestone: 20, 'Oak Log': 5 },
-      icon: '⛏️',
+      icon: './Stone_Pickaxe.webp',
       speed: 4,
       maxDurability: 131,
       craftTime: 5,

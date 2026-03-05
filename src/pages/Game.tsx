@@ -7,7 +7,15 @@ import {
   toolChains,
   blockProperties,
   availablePets,
+  BASE_INVENTORY_CAPACITY,
+  UPGRADE_STORAGE_BONUS,
 } from '../assets/consts';
+
+import EquipmentHeader from '../components/EquipmentHeader';
+import InventoryPanel from '../components/InventoryPanel';
+import UpgradesPanel from '../components/UpgradesPanel';
+import CraftingPanel, { type CraftingTask } from '../components/CraftingPanel';
+import PetsPanel from '../components/PetsPanel';
 
 export default function Game() {
   // Estado de Dimensões e Blocos
@@ -34,12 +42,6 @@ export default function Game() {
   const [miningProgress, setMiningProgress] = useState<number>(0);
   const [warningMessage, setWarningMessage] = useState<string>('');
 
-  type CraftingTask = {
-    toolCategory: string;
-    tier: number;
-    progress: number;
-    totalTime: number;
-  };
   const [activeCraft, setActiveCraft] = useState<CraftingTask | null>(null);
   const [activeUpgrades, setActiveUpgrades] = useState<string[]>([]);
 
@@ -53,18 +55,19 @@ export default function Game() {
         const newInv = { ...prev };
         let updated = false;
 
+        const maxCap =
+          BASE_INVENTORY_CAPACITY +
+          (toolsLevel.storage > 0
+            ? toolChains.storage[toolsLevel.storage - 1].capacityBonus
+            : 0) +
+          (activeUpgrades.includes('upg_storage_1') ? UPGRADE_STORAGE_BONUS : 0);
+
         // upg_idle_1 (2 secs)
         if (activeUpgrades.includes('upg_idle_1')) {
           const currentCap = Object.values(newInv).reduce(
             (acc, val) => acc + val,
             0
           );
-          const maxCap =
-            50 +
-            (toolsLevel.storage > 0
-              ? toolChains.storage[toolsLevel.storage - 1].capacityBonus
-              : 0) +
-            (activeUpgrades.includes('upg_storage_1') ? 100 : 0);
           if (currentCap < maxCap) {
             const drops = ['Dirt', 'Sand', 'Oak Log'];
             const drop = drops[Math.floor(Math.random() * drops.length)];
@@ -79,12 +82,6 @@ export default function Game() {
             (acc, val) => acc + val,
             0
           );
-          const maxCap =
-            50 +
-            (toolsLevel.storage > 0
-              ? toolChains.storage[toolsLevel.storage - 1].capacityBonus
-              : 0) +
-            (activeUpgrades.includes('upg_storage_1') ? 100 : 0);
           if (currentCap < maxCap) {
             const drops = ['Cobblestone', 'Raw Copper', 'Coal'];
             const drop = drops[Math.floor(Math.random() * drops.length)];
@@ -100,12 +97,6 @@ export default function Game() {
             (acc, val) => acc + val,
             0
           );
-          const maxCap =
-            50 +
-            (toolsLevel.storage > 0
-              ? toolChains.storage[toolsLevel.storage - 1].capacityBonus
-              : 0) +
-            (activeUpgrades.includes('upg_storage_1') ? 100 : 0);
           if (currentCap < maxCap) {
             // 5% chance pra pingar drop extra por level nesse ciclo idle
             if (Math.random() * 100 < 5 * petLevel) {
@@ -132,9 +123,9 @@ export default function Game() {
       ? toolChains.storage[currentStorageTier - 1].capacityBonus
       : 0;
   const upgradeCapacityBonus = activeUpgrades.includes('upg_storage_1')
-    ? 100
+    ? UPGRADE_STORAGE_BONUS
     : 0;
-  const maxCapacity = 50 + storageCapacityBonus + upgradeCapacityBonus;
+  const maxCapacity = BASE_INVENTORY_CAPACITY + storageCapacityBonus + upgradeCapacityBonus;
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -168,11 +159,6 @@ export default function Game() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCraft?.progress]);
 
-  // Estados dos Menus
-  const [isUpgradesOpen, setIsUpgradesOpen] = useState<boolean>(true);
-  const [isCraftingOpen, setIsCraftingOpen] = useState<boolean>(false);
-  const [isPetsOpen, setIsPetsOpen] = useState<boolean>(false);
-
   const blockName = nameMap[currentBlock] || currentBlock;
   const currentDimData = dimensions[currentDim];
 
@@ -198,6 +184,55 @@ export default function Game() {
       setActiveUpgrades((prev) => [...prev, upgradeId]);
     } else {
       alert('Recursos insuficientes para o upgrade!');
+    }
+  }
+
+  // Lógica para Mudar de Dimensão
+  function handleDimensionChange(newDim: string) {
+    setCurrentDim(newDim);
+    setCurrentBlock(dimensions[newDim].blocks[0].name); // Reseta pro primeiro bloco da dimensão
+    setMiningProgress(0); // Reseta progresso ao trocar de dimensão
+    setWarningMessage('');
+  }
+
+  // Lógica de Crafting (Compra de Ferramentas)
+  function buyTool(toolCategory: string) {
+    const currentTier = toolsLevel[toolCategory];
+    const nextTool = toolChains[toolCategory][currentTier];
+
+    if (!nextTool) return; // Já está no nível máximo
+
+    // Verifica se tem todos os recursos
+    let canBuy = true;
+    for (const [res, amount] of Object.entries(nextTool.cost)) {
+      if ((inventory[res] || 0) < (amount as number)) canBuy = false;
+    }
+
+    if (canBuy) {
+      // Desconta recursos
+      setInventory((prev) => {
+        const newInv = { ...prev };
+        for (const [res, amount] of Object.entries(nextTool.cost)) {
+          newInv[res] -= amount as number;
+        }
+        return newInv;
+      });
+      if (activeCraft) {
+        alert('Você já está craftando um item!');
+        return;
+      }
+
+      let timeMultiplier = 1;
+      if (activeUpgrades.includes('upg_crafting_1')) timeMultiplier -= 0.2; // 20% mais rápido
+
+      setActiveCraft({
+        toolCategory,
+        tier: currentTier,
+        progress: 0,
+        totalTime: (nextTool.craftTime || 2) * timeMultiplier,
+      });
+    } else {
+      alert('Recursos insuficientes!');
     }
   }
 
@@ -263,7 +298,13 @@ export default function Game() {
           setToolsLevel((prev) => ({ ...prev, [reqTool]: 0 }));
           return;
         }
+      }
+    }
 
+    const newProgress = miningProgress + toolSpeed + petSpeedBonus;
+    if (newProgress >= hardness) {
+      // Bloco quebrado! Agora aplicamos o dano na ferramenta.
+      if (reqTool !== 'none' && toolsLevel[reqTool] > 0) {
         const newDurability = toolDurabilities[reqTool] - 1;
         setToolDurabilities((prev) => ({ ...prev, [reqTool]: newDurability }));
 
@@ -273,10 +314,7 @@ export default function Game() {
           setToolsLevel((prev) => ({ ...prev, [reqTool]: 0 }));
         }
       }
-    }
 
-    const newProgress = miningProgress + toolSpeed + petSpeedBonus;
-    if (newProgress >= hardness) {
       const drop = dropMap[currentBlock];
 
       let dropAmount = 1;
@@ -334,55 +372,6 @@ export default function Game() {
       setWarningMessage('');
     } else {
       setMiningProgress(newProgress);
-    }
-  }
-
-  // Lógica para Mudar de Dimensão
-  function handleDimensionChange(newDim: string) {
-    setCurrentDim(newDim);
-    setCurrentBlock(dimensions[newDim].blocks[0].name); // Reseta pro primeiro bloco da dimensão
-    setMiningProgress(0); // Reseta progresso ao trocar de dimensão
-    setWarningMessage('');
-  }
-
-  // Lógica de Crafting (Compra de Ferramentas)
-  function buyTool(toolCategory: string) {
-    const currentTier = toolsLevel[toolCategory];
-    const nextTool = toolChains[toolCategory][currentTier];
-
-    if (!nextTool) return; // Já está no nível máximo
-
-    // Verifica se tem todos os recursos
-    let canBuy = true;
-    for (const [res, amount] of Object.entries(nextTool.cost)) {
-      if ((inventory[res] || 0) < (amount as number)) canBuy = false;
-    }
-
-    if (canBuy) {
-      // Desconta recursos
-      setInventory((prev) => {
-        const newInv = { ...prev };
-        for (const [res, amount] of Object.entries(nextTool.cost)) {
-          newInv[res] -= amount as number;
-        }
-        return newInv;
-      });
-      if (activeCraft) {
-        alert('Você já está craftando um item!');
-        return;
-      }
-
-      let timeMultiplier = 1;
-      if (activeUpgrades.includes('upg_crafting_1')) timeMultiplier -= 0.2; // 20% mais rápido
-
-      setActiveCraft({
-        toolCategory,
-        tier: currentTier,
-        progress: 0,
-        totalTime: (nextTool.craftTime || 2) * timeMultiplier,
-      });
-    } else {
-      alert('Recursos insuficientes!');
     }
   }
 
@@ -451,337 +440,33 @@ export default function Game() {
 
       {/* LADO DIREITO: Gerenciamento */}
       <div className="w-full md:w-100 bg-stone-100 dark:bg-stone-950 flex flex-col h-[50vh] md:h-screen overflow-y-auto custom-scrollbar">
-        {/* Equipamentos Ativos */}
-        <div className="bg-stone-200 dark:bg-stone-800 p-4 border-b border-stone-300 dark:border-stone-700 flex justify-between">
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-stone-500 uppercase">
-              Picareta
-            </span>
-            <span className="font-bold text-stone-800 dark:text-stone-200">
-              {toolsLevel.pickaxe > 0
-                ? `${toolChains.pickaxe[toolsLevel.pickaxe - 1].name}`
-                : 'Mão (Nenhum)'}
-            </span>
-            {toolsLevel.pickaxe > 0 && (
-              <span className="text-xs text-amber-600">
-                {toolDurabilities.pickaxe} /{' '}
-                {toolChains.pickaxe[toolsLevel.pickaxe - 1].maxDurability}{' '}
-                restantes
-              </span>
-            )}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-stone-500 uppercase">
-              Pá
-            </span>
-            <span className="font-bold text-stone-800 dark:text-stone-200">
-              {toolsLevel.shovel > 0
-                ? `${toolChains.shovel[toolsLevel.shovel - 1].name}`
-                : 'Mão (Nenhum)'}
-            </span>
-            {toolsLevel.shovel > 0 && (
-              <span className="text-xs text-amber-600">
-                {toolDurabilities.shovel} /{' '}
-                {toolChains.shovel[toolsLevel.shovel - 1].maxDurability}{' '}
-                restantes
-              </span>
-            )}
-          </div>
-        </div>
+        <EquipmentHeader
+          toolsLevel={toolsLevel}
+          toolDurabilities={toolDurabilities}
+        />
 
-        {/* 1. Inventário */}
-        <div className="p-6 bg-stone-200 dark:bg-stone-900 border-b border-stone-300 dark:border-stone-800 sticky top-0 z-20 shadow-xl flex flex-col">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-extrabold text-stone-800 dark:text-stone-100 flex items-center gap-3">
-              <img
-                src="/Backpack.png"
-                alt="Backpack"
-                className="w-8 h-8 drop-shadow-md"
-                onError={(e) => (e.currentTarget.style.display = 'none')}
-              />
-              Inventário
-            </h3>
-            <span
-              className={`text-sm font-bold px-3 py-1 bg-stone-100 dark:bg-stone-950 rounded-full border ${currentCapacity >= maxCapacity ? 'text-red-500 border-red-500' : 'text-stone-500 border-stone-300 dark:border-stone-700'}`}
-            >
-              {currentCapacity} / {maxCapacity}
-            </span>
-          </div>
-          <div className="max-h-56 md:max-h-72 overflow-y-auto pr-2 custom-scrollbar grid grid-cols-2 gap-3">
-            {Object.entries(inventory).map(
-              ([resourceName, amount]) =>
-                amount > 0 && (
-                  <div
-                    key={resourceName}
-                    className="flex items-center gap-3 bg-white dark:bg-stone-950 p-2 md:p-3 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md transition-all group"
-                  >
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center p-1.5 group-hover:scale-105 transition-transform flex-shrink-0 border border-stone-200 dark:border-stone-800">
-                      <img
-                        src={`/${resourceName.replaceAll(' ', '_')}.webp`}
-                        alt={resourceName}
-                        className="w-full h-full object-contain drop-shadow-sm"
-                        onError={(e) =>
-                          (e.currentTarget.style.display = 'none')
-                        }
-                      />
-                    </div>
-                    <div className="flex flex-col overflow-hidden">
-                      <span
-                        className="text-[10px] md:text-xs text-stone-500 font-bold uppercase tracking-wider truncate"
-                        title={resourceName.replace(/_/g, ' ')}
-                      >
-                        {resourceName.replace(/_/g, ' ')}
-                      </span>
-                      <span className="text-lg md:text-xl font-black text-stone-800 dark:text-stone-200">
-                        {amount}
-                      </span>
-                    </div>
-                  </div>
-                )
-            )}
-          </div>
-        </div>
+        <InventoryPanel
+          inventory={inventory}
+          currentCapacity={currentCapacity}
+          maxCapacity={maxCapacity}
+        />
 
-        {/* 2. Menu de Upgrades */}
-        <div className="border-b border-stone-300 dark:border-stone-800">
-          <button
-            onClick={() => setIsUpgradesOpen(!isUpgradesOpen)}
-            className="w-full flex justify-between items-center p-5 bg-stone-100 dark:bg-stone-950 hover:bg-stone-200 dark:hover:bg-stone-900 transition-colors"
-          >
-            <span className="flex items-center gap-3 text-lg font-bold text-stone-800 dark:text-stone-200">
-              <img
-                src="/Anvil.webp"
-                alt="Anvil"
-                className="w-8 h-8 rounded drop-shadow-sm"
-                onError={(e) => (e.currentTarget.style.display = 'none')}
-              />
-              Upgrades
-            </span>
-            {/* Imagem da Seta com Rotação CSS */}
-            <img
-              src="/Down_Arrow.png"
-              alt="arrow"
-              className={`w-4 h-4 transition-transform duration-300 ${isUpgradesOpen ? 'rotate-0' : 'rotate-90 md:-rotate-90'}`}
-              onError={(e) => (e.currentTarget.style.display = 'none')}
-            />
-          </button>
+        <UpgradesPanel
+          activeUpgrades={activeUpgrades}
+          buyUpgrade={buyUpgrade}
+        />
 
-          {isUpgradesOpen && (
-            <div className="p-4 bg-stone-50 dark:bg-stone-900/50 space-y-3">
-              {availableUpgrades.map((upgrade) => {
-                const isBought = activeUpgrades.includes(upgrade.id);
-                return (
-                  <button
-                    key={upgrade.id}
-                    onClick={() => buyUpgrade(upgrade.id)}
-                    disabled={isBought}
-                    className={`w-full text-left bg-white dark:bg-stone-800 border p-3 rounded-xl transition-colors flex gap-3 group shadow-sm ${isBought ? 'opacity-50 cursor-not-allowed border-stone-300 dark:border-stone-700' : 'border-stone-200 dark:border-stone-700 hover:border-amber-500 cursor-pointer'}`}
-                  >
-                    <div className="w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-2xl border border-stone-200 group-hover:scale-105 transition-transform flex-shrink-0">
-                      {upgrade.icon}
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-stone-800 dark:text-stone-200 truncate pr-2">
-                          {upgrade.name}{' '}
-                          {isBought && (
-                            <span className="text-emerald-500 inline-block text-[10px] ml-1 uppercase">
-                              (Comprado)
-                            </span>
-                          )}
-                        </h4>
-                        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-100 dark:bg-stone-900 px-1.5 py-0.5 rounded flex-shrink-0">
-                          {upgrade.category}
-                        </span>
-                      </div>
-                      <p className="text-xs text-stone-500 mt-0.5 leading-tight">
-                        {upgrade.description}
-                      </p>
-                      {!isBought && (
-                        <div className="mt-2 text-xs text-stone-500">
-                          Custo:
-                          {Object.entries(upgrade.cost).map(([res, amount]) => (
-                            <span
-                              key={res}
-                              className="ml-1 inline-block bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded text-amber-800 dark:text-amber-500 font-bold"
-                            >
-                              {amount as number} {res}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <CraftingPanel
+          toolsLevel={toolsLevel}
+          activeCraft={activeCraft}
+          buyTool={buyTool}
+        />
 
-        {/* 3. Menu de Crafting Funcional */}
-        <div className="border-b border-stone-300 dark:border-stone-800">
-          <button
-            onClick={() => setIsCraftingOpen(!isCraftingOpen)}
-            className="w-full flex justify-between items-center p-5 bg-stone-100 dark:bg-stone-950 hover:bg-stone-200 dark:hover:bg-stone-900 transition-colors"
-          >
-            <span className="flex items-center gap-3 text-lg font-bold text-stone-800 dark:text-stone-200">
-              <img
-                src="/Crafting_Table.webp"
-                alt="Crafting"
-                className="w-8 h-8 rounded drop-shadow-sm"
-                onError={(e) => (e.currentTarget.style.display = 'none')}
-              />
-              Crafting
-            </span>
-            {/* Imagem da Seta com Rotação CSS */}
-            <img
-              src="/Down_Arrow.png"
-              alt="arrow"
-              className={`w-4 h-4 transition-transform duration-300 ${isCraftingOpen ? 'rotate-0' : 'rotate-90 md:-rotate-90'}`}
-              onError={(e) => (e.currentTarget.style.display = 'none')}
-            />
-          </button>
-
-          {isCraftingOpen && (
-            <div className="p-4 bg-stone-50 dark:bg-stone-900/50 space-y-3">
-              {activeCraft && (
-                <div className="bg-white dark:bg-stone-800 p-3 border border-emerald-500 rounded-xl mb-4 shadow-sm relative overflow-hidden">
-                  <div
-                    className="absolute top-0 left-0 h-full bg-emerald-500/10 transition-all duration-100"
-                    style={{
-                      width: `${(activeCraft.progress / activeCraft.totalTime) * 100}%`,
-                    }}
-                  />
-                  <div className="relative z-10">
-                    <h4 className="font-bold text-stone-800 dark:text-stone-200 text-sm mb-1">
-                      Craftando:{' '}
-                      {
-                        toolChains[activeCraft.toolCategory][activeCraft.tier]
-                          .name
-                      }
-                    </h4>
-                    <p className="text-xs text-stone-500 font-bold">
-                      {Math.min(
-                        activeCraft.totalTime,
-                        activeCraft.progress
-                      ).toFixed(1)}
-                      s / {activeCraft.totalTime}s
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {Object.keys(toolChains).map((toolCategory) => {
-                const currentTier = toolsLevel[toolCategory];
-                const tool = toolChains[toolCategory][currentTier];
-
-                // Se a ferramenta já foi upada no máximo, não exibe mais nada (ou você pode exibir "MÁXIMO")
-                if (!tool) return null;
-
-                return (
-                  <button
-                    key={tool.id}
-                    onClick={() => buyTool(toolCategory)}
-                    className="w-full text-left bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-3 rounded-xl hover:border-emerald-500 transition-colors flex gap-3 group shadow-sm"
-                  >
-                    <div className="w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-2xl border border-stone-200 group-hover:scale-105 transition-transform">
-                      {tool.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-stone-800 dark:text-stone-200">
-                        {tool.name}
-                      </h4>
-                      <div className="mt-2 text-xs text-stone-500">
-                        Custo:
-                        {Object.entries(tool.cost).map(([res, amount]) => (
-                          <span
-                            key={res}
-                            className="ml-1 inline-block bg-stone-200 dark:bg-stone-900 px-1.5 py-0.5 rounded text-stone-700 dark:text-stone-300"
-                          >
-                            {amount as number} {res}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* 4. Menu de Pets */}
-        <div className="border-b border-stone-300 dark:border-stone-800">
-          <button
-            onClick={() => setIsPetsOpen(!isPetsOpen)}
-            className="w-full flex justify-between items-center p-5 bg-stone-100 dark:bg-stone-950 hover:bg-stone-200 dark:hover:bg-stone-900 transition-colors"
-          >
-            <span className="flex items-center gap-3 text-lg font-bold text-stone-800 dark:text-stone-200">
-              <span className="w-8 h-8 flex items-center justify-center text-xl bg-stone-200 dark:bg-stone-800 rounded">
-                🐾
-              </span>
-              Meus Pets
-            </span>
-            <img
-              src="/Down_Arrow.png"
-              alt="arrow"
-              className={`w-4 h-4 transition-transform duration-300 ${isPetsOpen ? 'rotate-0' : 'rotate-90 md:-rotate-90'}`}
-              onError={(e) => (e.currentTarget.style.display = 'none')}
-            />
-          </button>
-
-          {isPetsOpen && (
-            <div className="p-4 bg-stone-50 dark:bg-stone-900/50 space-y-3">
-              {Object.keys(ownedPets).length === 0 ? (
-                <div className="text-center p-4 text-stone-500 text-sm font-bold bg-white dark:bg-stone-800 rounded-xl border border-dashed border-stone-300 dark:border-stone-700">
-                  Nenhum Pet encontrado ainda.
-                  <br /> Continue minerando!
-                </div>
-              ) : (
-                Object.entries(ownedPets).map(([petId, level]) => {
-                  const petInfo = availablePets.find((p) => p.id === petId);
-                  if (!petInfo) return null;
-                  const isEquipped = equippedPet === petId;
-
-                  return (
-                    <div
-                      key={petId}
-                      className={`w-full text-left bg-white dark:bg-stone-800 border p-3 rounded-xl transition-colors shadow-sm ${isEquipped ? 'border-amber-500' : 'border-stone-200 dark:border-stone-700'}`}
-                    >
-                      <div className="flex gap-3 items-center">
-                        <div className="w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-3xl border border-stone-200 flex-shrink-0 relative overflow-hidden">
-                          <div className="absolute top-0 right-0 bg-stone-800 text-white text-[9px] px-1 font-bold rounded-bl">
-                            {petInfo.category.charAt(0)}
-                          </div>
-                          {petInfo.icon}
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                          <div className="flex justify-between items-start">
-                            <h4 className="font-bold text-stone-800 dark:text-stone-200 truncate pr-2">
-                              {petInfo.name}{' '}
-                              <span className="text-amber-600">Lv.{level}</span>
-                            </h4>
-                          </div>
-                          <p className="text-[10px] text-stone-500 font-bold uppercase">
-                            {petInfo.category} - {petInfo.baseBonusStr}
-                          </p>
-                          <button
-                            onClick={() =>
-                              setEquippedPet(isEquipped ? null : petId)
-                            }
-                            className={`mt-2 text-xs font-bold px-3 py-1 rounded transition-colors ${isEquipped ? 'bg-amber-100 text-amber-800 cursor-pointer' : 'bg-stone-200 dark:bg-stone-700 text-stone-800 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-600'}`}
-                          >
-                            {isEquipped ? 'Desequipar' : 'Equipar'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          )}
-        </div>
+        <PetsPanel
+          ownedPets={ownedPets}
+          equippedPet={equippedPet}
+          setEquippedPet={setEquippedPet}
+        />
       </div>
     </div>
   );
