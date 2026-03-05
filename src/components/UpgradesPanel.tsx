@@ -4,11 +4,13 @@ import { availableUpgrades } from '../assets/consts';
 interface UpgradesPanelProps {
     activeUpgrades: string[];
     buyUpgrade: (id: string) => void;
+    mineCoins: number;
 }
 
 export default function UpgradesPanel({
     activeUpgrades,
     buyUpgrade,
+    mineCoins,
 }: UpgradesPanelProps) {
     const [isUpgradesOpen, setIsUpgradesOpen] = useState<boolean>(false);
 
@@ -68,7 +70,12 @@ export default function UpgradesPanel({
                                     </p>
                                     {!isBought && (
                                         <div className="mt-2 text-xs text-stone-500">
-                                            Custo:
+                                            Custo:{' '}
+                                            {upgrade.mineCoinCost && (
+                                                <span className={`ml-1 inline-block px-1.5 py-0.5 rounded font-bold ${mineCoins >= upgrade.mineCoinCost ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-500' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-500'}`}>
+                                                    {upgrade.mineCoinCost} MC
+                                                </span>
+                                            )}
                                             {Object.entries(upgrade.cost).map(([res, amount]) => (
                                                 <span
                                                     key={res}

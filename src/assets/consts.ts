@@ -59,12 +59,12 @@ export const blockProperties: Record<
   string,
   { hardness: number; reqTool: string; reqLevel: number }
 > = {
-  Sand: { hardness: 5, reqTool: 'none', reqLevel: 0 },
-  Oak_Log: { hardness: 10, reqTool: 'none', reqLevel: 0 },
-  Oak_Leaves: { hardness: 2, reqTool: 'none', reqLevel: 0 },
-  Grass_Block: { hardness: 6, reqTool: 'none', reqLevel: 0 },
-  Dirt: { hardness: 5, reqTool: 'none', reqLevel: 0 },
-  Gravel: { hardness: 5, reqTool: 'none', reqLevel: 0 },
+  Sand: { hardness: 5, reqTool: 'shovel', reqLevel: 0 },
+  Oak_Log: { hardness: 10, reqTool: 'axe', reqLevel: 0 },
+  Oak_Leaves: { hardness: 2, reqTool: 'hoe', reqLevel: 0 },
+  Grass_Block: { hardness: 6, reqTool: 'shovel', reqLevel: 0 },
+  Dirt: { hardness: 5, reqTool: 'shovel', reqLevel: 0 },
+  Gravel: { hardness: 5, reqTool: 'shovel', reqLevel: 0 },
   Stone: { hardness: 20, reqTool: 'pickaxe', reqLevel: 1 },
   Coal_Ore: { hardness: 25, reqTool: 'pickaxe', reqLevel: 1 },
   Copper_Ore: { hardness: 30, reqTool: 'pickaxe', reqLevel: 1 },
@@ -154,7 +154,7 @@ export const toolChains: Record<string, any[]> = {
       id: 'pick_iron',
       name: 'Picareta de Ferro',
       cost: { 'Raw Iron': 15, 'Oak Log': 5 },
-      icon: '⛏️',
+      icon: './Iron_Pickaxe.webp',
       speed: 6,
       maxDurability: 250,
       craftTime: 15,
@@ -163,16 +163,63 @@ export const toolChains: Record<string, any[]> = {
       id: 'pick_gold',
       name: 'Picareta de Ouro',
       cost: { 'Raw Gold': 15, 'Oak Log': 5 },
-      icon: '⛏️',
+      icon: './Gold_Pickaxe.webp',
       speed: 8,
-      maxDurability: 32,
+      maxDurability: 550,
       craftTime: 25,
     },
     {
       id: 'pick_diamond',
       name: 'Picareta de Diamante',
       cost: { Diamond: 10, 'Oak Log': 5 },
-      icon: '⛏️',
+      icon: './Diamond_Pickaxe.webp',
+      speed: 10,
+      maxDurability: 1561,
+      craftTime: 60,
+    },
+  ],
+  axe: [
+    {
+      id: 'axe_wood',
+      name: 'Machado de Madeira',
+      cost: { 'Oak Log': 3 },
+      icon: './Wooden_Axe.webp',
+      speed: 2,
+      maxDurability: 59,
+      craftTime: 2,
+    },
+    {
+      id: 'axe_stone',
+      name: 'Machado de Pedra',
+      cost: { Cobblestone: 10, 'Oak Log': 3 },
+      icon: './Stone_Axe.webp',
+      speed: 4,
+      maxDurability: 131,
+      craftTime: 5,
+    },
+    {
+      id: 'axe_iron',
+      name: 'Machado de Ferro',
+      cost: { 'Raw Iron': 15, 'Oak Log': 3 },
+      icon: './Iron_Axe.webp',
+      speed: 6,
+      maxDurability: 250,
+      craftTime: 15,
+    },
+    {
+      id: 'axe_gold',
+      name: 'Machado de Ouro',
+      cost: { 'Raw Gold': 15, 'Oak Log': 3 },
+      icon: './Gold_Axe.webp',
+      speed: 8,
+      maxDurability: 32,
+      craftTime: 25,
+    },
+    {
+      id: 'axe_diamond',
+      name: 'Machado de Diamante',
+      cost: { Diamond: 10, 'Oak Log': 3 },
+      icon: './Diamond_Axe.webp',
       speed: 10,
       maxDurability: 1561,
       craftTime: 60,
@@ -183,7 +230,7 @@ export const toolChains: Record<string, any[]> = {
       id: 'shov_wood',
       name: 'Pá de Madeira',
       cost: { 'Oak Log': 3 },
-      icon: '🪏',
+      icon: './Wooden_Shovel.webp',
       speed: 2,
       maxDurability: 59,
       craftTime: 2,
@@ -192,7 +239,7 @@ export const toolChains: Record<string, any[]> = {
       id: 'shov_stone',
       name: 'Pá de Pedra',
       cost: { Cobblestone: 10, 'Oak Log': 3 },
-      icon: '🪏',
+      icon: './Stone_Shovel.webp',
       speed: 4,
       maxDurability: 131,
       craftTime: 5,
@@ -201,7 +248,7 @@ export const toolChains: Record<string, any[]> = {
       id: 'shov_iron',
       name: 'Pá de Ferro',
       cost: { 'Raw Iron': 15, 'Oak Log': 3 },
-      icon: '🪏',
+      icon: './Iron_Shovel.webp',
       speed: 6,
       maxDurability: 250,
       craftTime: 15,
@@ -210,7 +257,7 @@ export const toolChains: Record<string, any[]> = {
       id: 'shov_gold',
       name: 'Pá de Ouro',
       cost: { 'Raw Gold': 15, 'Oak Log': 3 },
-      icon: '🪏',
+      icon: './Gold_Shovel.webp',
       speed: 8,
       maxDurability: 32,
       craftTime: 25,
@@ -219,7 +266,54 @@ export const toolChains: Record<string, any[]> = {
       id: 'shov_diamond',
       name: 'Pá de Diamante',
       cost: { Diamond: 10, 'Oak Log': 3 },
-      icon: '🪏',
+      icon: './Diamond_Shovel.webp',
+      speed: 10,
+      maxDurability: 1561,
+      craftTime: 60,
+    },
+  ],
+  hoe: [
+    {
+      id: 'hoe_wood',
+      name: 'Enxada de Madeira',
+      cost: { 'Oak Log': 2 },
+      icon: './Wooden_Hoe.webp',
+      speed: 2,
+      maxDurability: 59,
+      craftTime: 2,
+    },
+    {
+      id: 'hoe_stone',
+      name: 'Enxada de Pedra',
+      cost: { Cobblestone: 10, 'Oak Log': 2 },
+      icon: './Stone_Hoe.webp',
+      speed: 4,
+      maxDurability: 131,
+      craftTime: 5,
+    },
+    {
+      id: 'hoe_iron',
+      name: 'Enxada de Ferro',
+      cost: { 'Raw Iron': 15, 'Oak Log': 2 },
+      icon: './Iron_Hoe.webp',
+      speed: 6,
+      maxDurability: 250,
+      craftTime: 15,
+    },
+    {
+      id: 'hoe_gold',
+      name: 'Enxada de Ouro',
+      cost: { 'Raw Gold': 15, 'Oak Log': 2 },
+      icon: './Gold_Hoe.webp',
+      speed: 8,
+      maxDurability: 32,
+      craftTime: 25,
+    },
+    {
+      id: 'hoe_diamond',
+      name: 'Enxada de Diamante',
+      cost: { Diamond: 10, 'Oak Log': 2 },
+      icon: './Diamond_Hoe.webp',
       speed: 10,
       maxDurability: 1561,
       craftTime: 60,
@@ -303,70 +397,118 @@ export const availableUpgrades = [
     cost: { 'Oak Log': 100, 'Raw Copper': 50 },
     icon: '👖',
   },
+  {
+    id: 'upg_autosell',
+    category: 'idle',
+    name: 'Comerciante Automático',
+    description: 'Vende recursos do inventário automaticamente a cada 5 segundos.',
+
+    cost: {},
+    mineCoinCost: 100000,
+    icon: '🤝',
+  },
+  {
+    id: 'upg_villagers_unlock',
+    category: 'idle',
+    name: 'Taverna Local',
+    description: 'Desbloqueia a contratação de aldeões para coletar recursos passivamente.',
+    cost: { 'Oak Log': 500, Cobblestone: 500, 'Raw Iron': 100 },
+    icon: '🏠',
+  },
 ];
 
 // 7. Sistema de Pets
 export type PetCategory = 'Comum' | 'Raro' | 'Épico' | 'Lendário';
 
-export interface PetDef {
+export interface Pet {
   id: string;
   name: string;
-  category: PetCategory;
-  icon: string;
-  dropChance: number; // Porcentagem (0 a 100)
+  category: string;
   baseBonusStr: string;
+  dropChance: number; // 0 a 100
+  icon: string;
+  maxLevel: number;
   effect: {
-    type: 'speed' | 'drop' | 'idle_speed';
+    type: 'speed' | 'drop' | 'special';
     baseValue: number;
-    valuePerLevel: number;
+    valuePerLevel: number; // Quanto o bonus aumenta por level
   };
 }
 
-export const availablePets: PetDef[] = [
+export const availablePets: Pet[] = [
   {
     id: 'pet_dog',
-    name: 'Cachorro Fiel',
+    name: 'Cachorrinho',
     category: 'Comum',
+    baseBonusStr: '+1 Velocidade/Nv',
+    dropChance: 0.05,
     icon: '🐶',
-    dropChance: 0.001,
-    baseBonusStr: '+0.5 Min. Speed por lvl',
-    effect: { type: 'speed', baseValue: 1, valuePerLevel: 0.5 },
+    maxLevel: 10,
+    effect: { type: 'speed', baseValue: 1, valuePerLevel: 1 },
   },
   {
     id: 'pet_cat',
-    name: 'Gato Ágil',
+    name: 'Gatinho',
     category: 'Comum',
+    baseBonusStr: 'Drops Passivos/Nv',
+    dropChance: 0.05,
     icon: '🐱',
-    dropChance: 0.001,
-    baseBonusStr: '+5% Velocidade Idle por lvl',
-    effect: { type: 'idle_speed', baseValue: 5, valuePerLevel: 5 },
+    maxLevel: 10,
+    effect: { type: 'special', baseValue: 0, valuePerLevel: 0 },
   },
   {
-    id: 'pet_fox',
-    name: 'Raposa Astuta',
-    category: 'Raro',
-    icon: '🦊',
-    dropChance: 0.0005,
-    baseBonusStr: '+0.1 Drops extras por hit por lvl',
-    effect: { type: 'drop', baseValue: 0.2, valuePerLevel: 0.1 },
+    id: 'pet_pig',
+    name: 'Porquinho',
+    category: 'Incomum',
+    baseBonusStr: '+1 Drop/Nv',
+    dropChance: 0.025,
+    icon: '🐷',
+    maxLevel: 15,
+    effect: { type: 'drop', baseValue: 1, valuePerLevel: 1 },
   },
   {
     id: 'pet_dragon',
     name: 'Dragão Bebê',
-    category: 'Épico',
+    category: 'Raro',
+    baseBonusStr: '+5 Vel. & +0.5 Drop/Nv',
+    dropChance: 0.005,
     icon: '🐉',
-    dropChance: 0.0001,
-    baseBonusStr: '+2 Min. Speed e +0.5 Drops por hit por lvl',
-    // Dragão épico vai combinar logic no código, por aqui definimos o primário
+    maxLevel: 30,
     effect: { type: 'speed', baseValue: 5, valuePerLevel: 2 },
   },
   {
     id: 'pet_unicorn',
-    name: 'Unicórnio Místico',
+    name: 'Unicórnio Estelar',
     category: 'Lendário',
+    baseBonusStr: '+10 Vel. & +2 Drops/Nv',
+    dropChance: 0.0001,
     icon: '🦄',
-    dropChance: 0.00001,
-    baseBonusStr: 'Drops absurdos, Força insana',
-    effect: { type: 'drop', baseValue: 1, valuePerLevel: 1 },
+    maxLevel: 50,
+    effect: { type: 'drop', baseValue: 2, valuePerLevel: 2 },
   },
 ];
+
+export const getPetXpRequired = (level: number) => level * 100;
+
+// 8. Tabela de Preços dos Itens
+export const itemPrices: Record<string, number> = {
+  Sand: 1,
+  'Oak Log': 2,
+  Dirt: 1,
+  Gravel: 1,
+  Cobblestone: 2,
+  Coal: 5,
+  'Raw Copper': 8,
+  'Raw Iron': 12,
+  'Raw Gold': 20,
+  'Redstone Dust': 15,
+  'Lapis Lazuli': 20,
+  Diamond: 100,
+  Emerald: 150,
+  Netherrack: 3,
+  'Gold Nugget': 5,
+  'Nether Quartz': 10,
+  'Ancient Debris': 250,
+  'End Stone': 15,
+};
+

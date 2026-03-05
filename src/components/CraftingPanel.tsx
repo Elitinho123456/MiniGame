@@ -78,8 +78,8 @@ export default function CraftingPanel({
                                 onClick={() => buyTool(toolCategory)}
                                 className="w-full text-left bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-3 rounded-xl hover:border-emerald-500 transition-colors flex gap-3 group shadow-sm"
                             >
-                                <div className="w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-2xl border border-stone-200 group-hover:scale-105 transition-transform">
-                                    <img src={tool.icon} alt={tool.name} />
+                                <div className="w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-2xl border border-stone-200 group-hover:scale-105 transition-transform p-1">
+                                    <img src={tool.icon} alt={tool.name} className="w-full h-full object-contain drop-shadow-sm" onError={(e) => (e.currentTarget.style.display = 'none')} />
                                 </div>
                                 <div className="flex-1">
                                     <h4 className="font-bold text-stone-800 dark:text-stone-200">

@@ -1,16 +1,20 @@
 import { useState } from 'react';
-import { availablePets } from '../assets/consts';
+import { availablePets, getPetXpRequired } from '../assets/consts';
 
 interface PetsPanelProps {
-    ownedPets: Record<string, number>;
+    ownedPets: Record<string, { level: number, xp: number }>;
     equippedPet: string | null;
     setEquippedPet: (petId: string | null) => void;
+    upgradePet: (petId: string) => void;
+    mineCoins: number;
 }
 
 export default function PetsPanel({
     ownedPets,
     equippedPet,
     setEquippedPet,
+    upgradePet,
+    mineCoins,
 }: PetsPanelProps) {
     const [isPetsOpen, setIsPetsOpen] = useState<boolean>(false);
 
@@ -42,10 +46,17 @@ export default function PetsPanel({
                             <br /> Continue minerando!
                         </div>
                     ) : (
-                        Object.entries(ownedPets).map(([petId, level]) => {
+                        Object.entries(ownedPets).map(([petId, petData]) => {
                             const petInfo = availablePets.find((p) => p.id === petId);
                             if (!petInfo) return null;
                             const isEquipped = equippedPet === petId;
+                            const { level, xp } = petData;
+                            const isMaxLevel = level >= petInfo.maxLevel;
+                            const xpNeeded = getPetXpRequired(level);
+                            const xpPercentage = isMaxLevel ? 100 : Math.min(100, (xp / xpNeeded) * 100);
+                            const missingXp = Math.max(0, xpNeeded - xp);
+                            const upgradeCost = missingXp * 2;
+                            const canAffordEvolution = isMaxLevel ? false : (xp >= xpNeeded || mineCoins >= upgradeCost);
 
                             return (
                                 <div
@@ -63,18 +74,44 @@ export default function PetsPanel({
                                             <div className="flex justify-between items-start">
                                                 <h4 className="font-bold text-stone-800 dark:text-stone-200 truncate pr-2">
                                                     {petInfo.name}{' '}
-                                                    <span className="text-amber-600">Lv.{level}</span>
+                                                    <span className="text-amber-600">Lv.{level}{isMaxLevel ? ' (MAX)' : ''}</span>
                                                 </h4>
                                             </div>
-                                            <p className="text-[10px] text-stone-500 font-bold uppercase">
+                                            <p className="text-[10px] text-stone-500 font-bold uppercase mb-1">
                                                 {petInfo.category} - {petInfo.baseBonusStr}
                                             </p>
-                                            <button
-                                                onClick={() => setEquippedPet(isEquipped ? null : petId)}
-                                                className={`mt-2 text-xs font-bold px-3 py-1 rounded transition-colors ${isEquipped ? 'bg-amber-100 text-amber-800 cursor-pointer' : 'bg-stone-200 dark:bg-stone-700 text-stone-800 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-600'}`}
-                                            >
-                                                {isEquipped ? 'Desequipar' : 'Equipar'}
-                                            </button>
+
+                                            {/* EXP Bar */}
+                                            <div className="w-full h-2 bg-stone-200 dark:bg-stone-900 rounded-full overflow-hidden mb-2 relative shadow-inner">
+                                                <div
+                                                    className="h-full bg-blue-500"
+                                                    style={{ width: `${xpPercentage}%` }}
+                                                />
+                                            </div>
+
+                                            <div className="flex justify-between items-center mt-2">
+                                                <button
+                                                    onClick={() => setEquippedPet(isEquipped ? null : petId)}
+                                                    className={`text-xs font-bold px-3 py-1.5 rounded transition-transform active:scale-95 ${isEquipped ? 'bg-amber-100 text-amber-800 shadow-sm' : 'bg-stone-200 dark:bg-stone-700 text-stone-800 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-600'}`}
+                                                >
+                                                    {isEquipped ? 'Desequipar' : 'Equipar'}
+                                                </button>
+
+                                                {!isMaxLevel && (
+                                                    <button
+                                                        onClick={() => upgradePet(petId)}
+                                                        disabled={!canAffordEvolution}
+                                                        className={`text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1 transition-transform active:scale-95 ${canAffordEvolution ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm' : 'bg-stone-300 dark:bg-stone-700 text-stone-500 cursor-not-allowed'}`}
+                                                    >
+                                                        Evoluir
+                                                        {xp < xpNeeded && (
+                                                            <span className="bg-emerald-600/50 px-1 rounded text-[10px]">
+                                                                {upgradeCost} MC
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
