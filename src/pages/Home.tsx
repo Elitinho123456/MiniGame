@@ -65,8 +65,8 @@ export default function Home() {
             </h1>
 
             <p className="text-lg md:text-xl text-stone-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Explore dimensões infinitas, colecione pets lendários e automatize sua produção
-              em um simulador de mineração ultra-minimalista e viciante.
+              Explore suas dimensões favoritas, colecione pets lendários e automatize sua produção
+              em um simulador de mineração viciante.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">

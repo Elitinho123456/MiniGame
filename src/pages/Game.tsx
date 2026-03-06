@@ -125,12 +125,12 @@ export default function Game() {
           }
         }
 
-        // Auto Sell Upgrade (every interval, sell random dirt/sand/cobble if we have any)
+        // upg_autosell (2 secs)
         if (activeUpgrades.includes('upg_autosell')) {
           const sellable = ['Dirt', 'Sand', 'Gravel', 'Cobblestone'];
           for (const item of sellable) {
             if (newInv[item] && newInv[item] > 0) {
-              const sellAmt = Math.min(newInv[item], 10); // Sell up to 10 per tick
+              const sellAmt = Math.min(newInv[item], 10);
               newInv[item] -= sellAmt;
               setMineCoins(prev => prev + (sellAmt * (itemPrices[item] || 1)));
               updated = true;
@@ -138,7 +138,7 @@ export default function Game() {
           }
         }
 
-        // Villagers Gathering Logic
+        // upg_villagers_unlock (2 secs)
         if (activeUpgrades.includes('upg_villagers_unlock')) {
           const currentCap = Object.values(newInv).reduce((acc, val) => acc + val, 0);
           if (currentCap < maxCap) {
@@ -146,8 +146,6 @@ export default function Game() {
               if (count > 0) {
                 const dim = dimensions[dimId];
                 if (dim && dim.blocks.length > 0) {
-                  // Collect from the first common blocks of that dimension based on count
-                  // 1 resource per villager per tick (2s)
                   const blockToFarm = dim.blocks[0];
                   const dropName = dropMap[blockToFarm.name];
                   if (dropName) {

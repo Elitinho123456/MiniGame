@@ -42,7 +42,7 @@ export default function Error() {
 
   const handleMine = (e: React.MouseEvent<HTMLDivElement>) => {
     if (mined) return;
-
+    e.preventDefault();
     setShake(true);
     setTimeout(() => setShake(false), 200);
 
