@@ -16,7 +16,7 @@ export default function ShopPanel({
     setMineCoins,
     onBuyPotion,
 }: ShopPanelProps) {
-    const [isShopOpen, setIsShopOpen] = useState(false);
+    const [isShopOpen, setIsShopOpen] = useState(true);
     const [activeTab, setActiveTab] = useState<'vender' | 'comprar'>('vender');
     const [sellAmount, setSellAmount] = useState<Record<string, number>>({});
 
@@ -25,8 +25,8 @@ export default function ShopPanel({
         { id: 'pot_loot', name: 'Poção de Fortuna', effect: 'Loot em Dobro (10 min)', cost: 100, icon: '🏺' },
     ];
 
-    const handleSell = (itemName: string) => {
-        const amountToSell = sellAmount[itemName] || 1;
+    const handleSell = (itemName: string, amount: number) => {
+        const amountToSell = amount || 1;
         const currentAmount = inventory[itemName] || 0;
 
         if (amountToSell <= 0 || currentAmount < amountToSell) return;
@@ -134,7 +134,7 @@ export default function ShopPanel({
                                                     className="w-12 md:w-16 px-2 py-1.5 text-sm rounded-lg bg-stone-100 dark:bg-stone-900 border border-stone-300 dark:border-stone-600 text-stone-800 dark:text-stone-200 text-center outline-none focus:border-emerald-500 transition-colors"
                                                 />
                                                 <button
-                                                    onClick={() => handleSell(itemName)}
+                                                    onClick={() => handleSell(itemName, toSell)}
                                                     className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-lg shadow transition-transform active:scale-95 text-sm"
                                                 >
                                                     Vender
@@ -143,8 +143,7 @@ export default function ShopPanel({
                                                     onClick={() => {
                                                         const currentAmount = inventory[itemName] || 0;
                                                         if (currentAmount > 0) {
-                                                            setSellAmount(prev => ({ ...prev, [itemName]: currentAmount }));
-                                                            setTimeout(() => handleSell(itemName), 0);
+                                                            setTimeout(() => handleSell(itemName, currentAmount), 100);
                                                         }
                                                     }}
                                                     className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/30 font-bold py-1.5 px-3 rounded-lg shadow transition-transform active:scale-95 text-sm"
