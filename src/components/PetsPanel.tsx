@@ -16,7 +16,7 @@ export default function PetsPanel({
     upgradePet,
     mineCoins,
 }: PetsPanelProps) {
-    const [isPetsOpen, setIsPetsOpen] = useState<boolean>(false);
+    const [isPetsOpen, setIsPetsOpen] = useState<boolean>(true);
 
     return (
         <div className="border-b border-stone-300 dark:border-stone-800">
@@ -31,7 +31,7 @@ export default function PetsPanel({
                     Meus Pets
                 </span>
                 <img
-                    src="/Down_Arrow.png"
+                    src="./src/assets/DownArrow.png"
                     alt="arrow"
                     className={`w-4 h-4 transition-transform duration-300 ${isPetsOpen ? 'rotate-0' : 'rotate-90 md:-rotate-90'}`}
                     onError={(e) => (e.currentTarget.style.display = 'none')}

@@ -12,7 +12,7 @@ export default function UpgradesPanel({
     buyUpgrade,
     mineCoins,
 }: UpgradesPanelProps) {
-    const [isUpgradesOpen, setIsUpgradesOpen] = useState<boolean>(false);
+    const [isUpgradesOpen, setIsUpgradesOpen] = useState<boolean>(true);
 
     return (
         <div className="border-b border-stone-300 dark:border-stone-800">
@@ -30,7 +30,7 @@ export default function UpgradesPanel({
                     Upgrades
                 </span>
                 <img
-                    src="/Down_Arrow.png"
+                    src="./src/assets/DownArrow.png"
                     alt="arrow"
                     className={`w-4 h-4 transition-transform duration-300 ${isUpgradesOpen ? 'rotate-0' : 'rotate-90 md:-rotate-90'}`}
                     onError={(e) => (e.currentTarget.style.display = 'none')}

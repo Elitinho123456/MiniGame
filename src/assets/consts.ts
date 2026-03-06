@@ -131,6 +131,11 @@ export const nameMap: Record<string, string> = {
 
 // 5. Cadeia de Progressão de Ferramentas (Crafting)
 export const toolChains: Record<string, any[]> = {
+
+  //#######################################################
+  // Picareta
+  //#######################################################
+
   pickaxe: [
     {
       id: 'pick_wood',
@@ -138,7 +143,7 @@ export const toolChains: Record<string, any[]> = {
       cost: { 'Oak Log': 5 },
       icon: './Wooden_Pickaxe.webp',
       speed: 2,
-      maxDurability: 60,
+      maxDurability: 639,
       craftTime: 2,
     },
     {
@@ -147,55 +152,60 @@ export const toolChains: Record<string, any[]> = {
       cost: { Cobblestone: 20, 'Oak Log': 5 },
       icon: './Stone_Pickaxe.webp',
       speed: 4,
-      maxDurability: 132,
-      craftTime: 5,
+      maxDurability: 1406,
+      craftTime: 20,
     },
     {
       id: 'pick_copper',
       name: 'Picareta de Cobre',
       cost: { 'Raw Copper': 15, 'Oak Log': 5 },
       icon: './Copper_Pickaxe.webp',
-      speed: 4,
-      maxDurability: 290,
-      craftTime: 5,
+      speed: 6,
+      maxDurability: 3093,
+      craftTime: 60,
     },
     {
       id: 'pick_iron',
       name: 'Picareta de Ferro',
       cost: { 'Raw Iron': 15, 'Oak Log': 5 },
       icon: './Iron_Pickaxe.webp',
-      speed: 6,
-      maxDurability: 639,
-      craftTime: 15,
+      speed: 8,
+      maxDurability: 6804,
+      craftTime: 147,
     },
     {
       id: 'pick_gold',
       name: 'Picareta de Ouro',
       cost: { 'Raw Gold': 15, 'Oak Log': 5 },
-      icon: './Gold_Pickaxe.webp',
-      speed: 8,
-      maxDurability: 1405,
-      craftTime: 25,
+      icon: './Golden_Pickaxe.webp',
+      speed: 10,
+      maxDurability: 14969,
+      craftTime: 271,
     },
     {
       id: 'pick_diamond',
       name: 'Picareta de Diamante',
       cost: { Diamond: 10, 'Oak Log': 5 },
       icon: './Diamond_Pickaxe.webp',
-      speed: 10,
-      maxDurability: 3.092,
-      craftTime: 60,
+      speed: 12,
+      maxDurability: 32932,
+      craftTime: 578,
     },
     {
       id: 'pick_netherite',
       name: 'Picareta de Netherite',
       cost: { Diamond: 10, 'Oak Log': 5 },
       icon: './Netherite_Pickaxe.webp',
-      speed: 10,
-      maxDurability: 3.092,
-      craftTime: 60,
+      speed: 14,
+      maxDurability: 72450,
+      craftTime: 1024,
     },
   ],
+
+  //#######################################################
+  // Machado
+  //#######################################################
+
   axe: [
     {
       id: 'axe_wood',
@@ -203,7 +213,7 @@ export const toolChains: Record<string, any[]> = {
       cost: { 'Oak Log': 3 },
       icon: './Wooden_Axe.webp',
       speed: 2,
-      maxDurability: 59,
+      maxDurability: 639,
       craftTime: 2,
     },
     {
@@ -212,8 +222,17 @@ export const toolChains: Record<string, any[]> = {
       cost: { Cobblestone: 10, 'Oak Log': 3 },
       icon: './Stone_Axe.webp',
       speed: 4,
-      maxDurability: 131,
-      craftTime: 5,
+      maxDurability: 1406,
+      craftTime: 20,
+    },
+    {
+      id: 'axe_cooper',
+      name: 'Machado de Cobre',
+      cost: { 'Raw Copper': 15, 'Oak Log': 3 },
+      icon: './Copper_Axe.webp',
+      speed: 6,
+      maxDurability: 3093,
+      craftTime: 60,
     },
     {
       id: 'axe_iron',
@@ -221,8 +240,8 @@ export const toolChains: Record<string, any[]> = {
       cost: { 'Raw Iron': 15, 'Oak Log': 3 },
       icon: './Iron_Axe.webp',
       speed: 6,
-      maxDurability: 250,
-      craftTime: 15,
+      maxDurability: 6804,
+      craftTime: 147,
     },
     {
       id: 'axe_gold',
@@ -230,8 +249,8 @@ export const toolChains: Record<string, any[]> = {
       cost: { 'Raw Gold': 15, 'Oak Log': 3 },
       icon: './Gold_Axe.webp',
       speed: 8,
-      maxDurability: 32,
-      craftTime: 25,
+      maxDurability: 14969,
+      craftTime: 271,
     },
     {
       id: 'axe_diamond',
@@ -239,10 +258,24 @@ export const toolChains: Record<string, any[]> = {
       cost: { Diamond: 10, 'Oak Log': 3 },
       icon: './Diamond_Axe.webp',
       speed: 10,
-      maxDurability: 1561,
-      craftTime: 60,
+      maxDurability: 32932,
+      craftTime: 578,
+    },
+    {
+      id: 'axe_netherite',
+      name: 'Machado de Netherite',
+      cost: { Diamond: 10, 'Oak Log': 3 },
+      icon: './Netherite_Axe.webp',
+      speed: 12,
+      maxDurability: 72450,
+      craftTime: 1024,
     },
   ],
+
+  //#######################################################
+  // Pá
+  //#######################################################
+
   shovel: [
     {
       id: 'shov_wood',
@@ -250,7 +283,7 @@ export const toolChains: Record<string, any[]> = {
       cost: { 'Oak Log': 3 },
       icon: './Wooden_Shovel.webp',
       speed: 2,
-      maxDurability: 59,
+      maxDurability: 639,
       craftTime: 2,
     },
     {
@@ -259,8 +292,17 @@ export const toolChains: Record<string, any[]> = {
       cost: { Cobblestone: 10, 'Oak Log': 3 },
       icon: './Stone_Shovel.webp',
       speed: 4,
-      maxDurability: 131,
-      craftTime: 5,
+      maxDurability: 1406,
+      craftTime: 20,
+    },
+    {
+      id: 'shov_cooper',
+      name: 'Pá de Cobre',
+      cost: { 'Raw Copper': 15, 'Oak Log': 3 },
+      icon: './Copper_Shovel.webp',
+      speed: 6,
+      maxDurability: 3093,
+      craftTime: 60,
     },
     {
       id: 'shov_iron',
@@ -268,8 +310,8 @@ export const toolChains: Record<string, any[]> = {
       cost: { 'Raw Iron': 15, 'Oak Log': 3 },
       icon: './Iron_Shovel.webp',
       speed: 6,
-      maxDurability: 250,
-      craftTime: 15,
+      maxDurability: 6804,
+      craftTime: 147,
     },
     {
       id: 'shov_gold',
@@ -277,8 +319,8 @@ export const toolChains: Record<string, any[]> = {
       cost: { 'Raw Gold': 15, 'Oak Log': 3 },
       icon: './Gold_Shovel.webp',
       speed: 8,
-      maxDurability: 32,
-      craftTime: 25,
+      maxDurability: 14969,
+      craftTime: 271,
     },
     {
       id: 'shov_diamond',
@@ -286,10 +328,24 @@ export const toolChains: Record<string, any[]> = {
       cost: { Diamond: 10, 'Oak Log': 3 },
       icon: './Diamond_Shovel.webp',
       speed: 10,
-      maxDurability: 1561,
-      craftTime: 60,
+      maxDurability: 32932,
+      craftTime: 578,
+    },
+    {
+      id: 'shov_netherite',
+      name: 'Pá de Netherite',
+      cost: { Diamond: 10, 'Oak Log': 3 },
+      icon: './Netherite_Shovel.webp',
+      speed: 12,
+      maxDurability: 72450,
+      craftTime: 1024,
     },
   ],
+
+  //#######################################################
+  // Enxada
+  //#######################################################
+
   hoe: [
     {
       id: 'hoe_wood',
@@ -297,7 +353,7 @@ export const toolChains: Record<string, any[]> = {
       cost: { 'Oak Log': 2 },
       icon: './Wooden_Hoe.webp',
       speed: 2,
-      maxDurability: 59,
+      maxDurability: 639,
       craftTime: 2,
     },
     {
@@ -306,8 +362,17 @@ export const toolChains: Record<string, any[]> = {
       cost: { Cobblestone: 10, 'Oak Log': 2 },
       icon: './Stone_Hoe.webp',
       speed: 4,
-      maxDurability: 131,
-      craftTime: 5,
+      maxDurability: 1406,
+      craftTime: 20,
+    },
+    {
+      id: 'hoe_cooper',
+      name: 'Enxada de Cobre',
+      cost: { 'Raw Copper': 15, 'Oak Log': 2 },
+      icon: './Copper_Hoe.webp',
+      speed: 6,
+      maxDurability: 3093,
+      craftTime: 60,
     },
     {
       id: 'hoe_iron',
@@ -315,8 +380,8 @@ export const toolChains: Record<string, any[]> = {
       cost: { 'Raw Iron': 15, 'Oak Log': 2 },
       icon: './Iron_Hoe.webp',
       speed: 6,
-      maxDurability: 250,
-      craftTime: 15,
+      maxDurability: 6804,
+      craftTime: 147,
     },
     {
       id: 'hoe_gold',
@@ -324,8 +389,8 @@ export const toolChains: Record<string, any[]> = {
       cost: { 'Raw Gold': 15, 'Oak Log': 2 },
       icon: './Gold_Hoe.webp',
       speed: 8,
-      maxDurability: 32,
-      craftTime: 25,
+      maxDurability: 14969,
+      craftTime: 271,
     },
     {
       id: 'hoe_diamond',
@@ -333,64 +398,96 @@ export const toolChains: Record<string, any[]> = {
       cost: { Diamond: 10, 'Oak Log': 2 },
       icon: './Diamond_Hoe.webp',
       speed: 10,
-      maxDurability: 1561,
-      craftTime: 60,
+      maxDurability: 32932,
+      craftTime: 578,
+    },
+    {
+      id: 'hoe_netherite',
+      name: 'Enxada de Netherite',
+      cost: { Diamond: 10, 'Oak Log': 2 },
+      icon: './Netherite_Hoe.webp',
+      speed: 12,
+      maxDurability: 72450,
+      craftTime: 1024,
     },
   ],
+
+  //#######################################################
+  // Armazenamento
+  //#######################################################
+
   storage: [
+
     {
-      id: 'stor_backpack',
+      id: 'stor_backpack_1',
       name: 'Mochila Pequena',
       cost: { 'Oak Log': 20, Sand: 10 },
-      icon: '🎒',
+      icon: './Backpack_Mini.png',
+      capacityBonus: 50,
+      craftTime: 10,
+    },
+
+    {
+      id: 'stor_backpack_2',
+      name: 'Mochila Média',
+      cost: { 'Oak Log': 20, Sand: 10 },
+      icon: './Backpack_Medium.png',
       capacityBonus: 50,
       craftTime: 10,
     },
     {
-      id: 'stor_chest',
-      name: 'Baú',
-      cost: { 'Oak Log': 50, Cobblestone: 20 },
-      icon: '📦',
-      capacityBonus: 100,
-      craftTime: 20,
+      id: 'stor_backpack_3',
+      name: 'Mochila Grande',
+      cost: { 'Oak Log': 20, Sand: 10 },
+      icon: './Backpack_Big.png',
+      capacityBonus: 50,
+      craftTime: 10,
     },
     {
-      id: 'stor_shulker',
-      name: 'Caixa Shulker',
-      cost: { 'End Stone': 10, Diamond: 2 },
-      icon: '🧰',
-      capacityBonus: 300,
-      craftTime: 40,
+      id: 'upgrade_backpack_cooper',
+      name: 'Mochila de Cobre',
+      cost: { 'Oak Log': 20, Sand: 10 },
+      icon: './Backpack_Cooper.png',
+      capacityBonus: 50,
+      craftTime: 10,
     },
     {
-      id: 'stor_end_backpack',
-      name: 'Mochila do Fim',
-      cost: { 'End Stone': 50, Netherrack: 50 },
-      icon: '🎒',
-      capacityBonus: 1000,
-      craftTime: 80,
+      id: 'upgrade_backpack_iron',
+      name: 'Mochila de Ferro',
+      cost: { 'Oak Log': 20, Sand: 10 },
+      icon: './Backpack_Iron.png',
+      capacityBonus: 50,
+      craftTime: 10,
+    },
+    {
+      id: 'upgrade_backpack_gold',
+      name: 'Mochila de Ouro',
+      cost: { 'Oak Log': 20, Sand: 10 },
+      icon: './Backpack_Gold.png',
+      capacityBonus: 50,
+      craftTime: 10,
+    },
+    {
+      id: 'upgrade_backpack_diamond',
+      name: 'Mochila de Diamante',
+      cost: { 'Oak Log': 20, Sand: 10 },
+      icon: './Backpack_Diamond.png',
+      capacityBonus: 50,
+      craftTime: 10,
+    },
+    {
+      id: 'upgrade_backpack_netherite',
+      name: 'Mochila de Netherite',
+      cost: { 'Oak Log': 20, Sand: 10 },
+      icon: './Backpack_Netherite.png',
+      capacityBonus: 50,
+      craftTime: 10,
     },
   ],
 };
 
 // 6. Upgrades (Melhorias com Categorias e Custos)
 export const availableUpgrades = [
-  {
-    id: 'upg_idle_1',
-    category: 'idle',
-    name: 'Villager Coletador',
-    description: 'Coleta alguns blocos simples do Overworld a cada 2 segs.',
-    cost: { Dirt: 50, 'Oak Log': 10 },
-    icon: '👨‍🌾',
-  },
-  {
-    id: 'upg_idle_2',
-    category: 'idle',
-    name: 'Mineiro Anão',
-    description: 'Coleta pedras e minérios simples das Cavernas a cada 2 segs.',
-    cost: { Cobblestone: 100, 'Raw Iron': 20 },
-    icon: '⛏️',
-  },
   {
     id: 'upg_mining_1',
     category: 'mining',
@@ -430,7 +527,7 @@ export const availableUpgrades = [
     category: 'idle',
     name: 'Taverna Local',
     description: 'Desbloqueia a contratação de aldeões para coletar recursos passivamente.',
-    cost: { 'Oak Log': 500, Cobblestone: 500, 'Raw Iron': 100 },
+    cost: { 'Oak Log': 50, Cobblestone: 50, 'Raw Iron': 10 },
     icon: '🏠',
   },
 ];
@@ -443,7 +540,7 @@ export interface Pet {
   name: string;
   category: string;
   baseBonusStr: string;
-  dropChance: number; // 0 a 100
+  dropChance: number;
   icon: string;
   maxLevel: number;
   effect: {

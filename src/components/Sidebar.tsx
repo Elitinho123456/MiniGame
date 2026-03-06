@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Pickaxe, Store, PawPrint, Users, Settings, FileText, LogOut, User } from 'lucide-react';
+import { Pickaxe, Store, PawPrint, Users, Settings, FileText, LogOut, User, CircleFadingPlus } from 'lucide-react';
 
 export type ActiveTab = 'mining' | 'shop' | 'pets' | 'villagers' | 'settings';
 
 interface SidebarProps {
-    activeTab: ActiveTab;
-    setActiveTab: (tab: ActiveTab) => void;
+    activeTab?: ActiveTab;
+    setActiveTab?: (tab: ActiveTab) => void;
+    isLanding?: boolean;
 }
 
-export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
+export default function Sidebar({ activeTab, setActiveTab, isLanding = false }: SidebarProps) {
     const [isExpanded, setIsExpanded] = useState(true);
     const navigate = useNavigate();
 
@@ -26,12 +27,12 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             className={`bg-[#1a1a1a] border-r border-stone-800 transition-all duration-300 flex flex-col ${isExpanded ? 'w-64' : 'w-20'}`}
         >
             <div className="p-4 flex items-center justify-between">
-                {isExpanded && <h1 className="font-black text-xl text-emerald-500 tracking-wider">M-CRAFT</h1>}
+                {isExpanded && <h1 className="font-black text-xl text-emerald-500 tracking-wider">MINIGAME</h1>}
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
                     className="p-2 hover:bg-stone-800 rounded-lg transition-colors text-stone-400 hover:text-white"
                 >
-                    {isExpanded ? '◀' : '▶'}
+                    {isExpanded ? <img src="./src/assets/DownArrow.png" alt="" className="w-5 h-5 rotate-90" /> : <img src="./src/assets/DownArrow.png" alt="" className="w-5 h-5 rotate-270" />}
                 </button>
             </div>
 
@@ -39,16 +40,20 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => !isLanding && setActiveTab?.(tab.id)}
+                        disabled={isLanding}
                         className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all text-sm font-medium ${activeTab === tab.id
                             ? 'bg-emerald-500/10 text-emerald-400'
                             : 'text-stone-300 hover:bg-white/5 hover:text-white'
-                            }`}
-                        title={!isExpanded ? tab.label : ''}
+                            } ${isLanding ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={isLanding ? 'Disponível no jogo' : (!isExpanded ? tab.label : '')}
                     >
                         <span className="flex-shrink-0">{tab.icon}</span>
                         {isExpanded && (
-                            <span className="whitespace-nowrap">{tab.label}</span>
+                            <div className="flex flex-col items-start overflow-hidden">
+                                <span className="whitespace-nowrap">{tab.label}</span>
+                                {isLanding && <span className="text-[10px] text-stone-500">No Jogo</span>}
+                            </div>
                         )}
                     </button>
                 ))}
@@ -61,6 +66,14 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                     >
                         <FileText size={20} className="flex-shrink-0" />
                         {isExpanded && <span className="whitespace-nowrap">Documentação</span>}
+                    </button>
+                    <button
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all text-sm font-medium text-stone-300 hover:bg-white/5 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={!isExpanded ? 'Mods' : ''}
+                        disabled
+                    >
+                        <CircleFadingPlus size={20} className="flex-shrink-0" />
+                        {isExpanded && <span className="whitespace-nowrap">Mods</span>}
                     </button>
                     <button
                         onClick={() => navigate('/')}

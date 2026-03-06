@@ -37,7 +37,7 @@ export default function CraftingPanel({
                     Crafting
                 </span>
                 <img
-                    src="/Down_Arrow.png"
+                    src="./src/assets/DownArrow.png"
                     alt="arrow"
                     className={`w-4 h-4 transition-transform duration-300 ${isCraftingOpen ? 'rotate-0' : 'rotate-90 md:-rotate-90'}`}
                     onError={(e) => (e.currentTarget.style.display = 'none')}
