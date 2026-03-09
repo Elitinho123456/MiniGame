@@ -22,6 +22,8 @@
 - [ ] Sistema de Biomas
 - [ ] Sistema de Mods e Criação de Mods
 - [ ] Sistema de Estruturas
+- [ ] Sistema de Rebirth
+- [ ] Sistema de Plantação
 
 ### Sistema de combate com mobs
 
