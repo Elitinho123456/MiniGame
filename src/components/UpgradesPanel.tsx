@@ -41,6 +41,8 @@ export default function UpgradesPanel({
                 <div className="p-4 bg-stone-50 dark:bg-stone-900/50 space-y-3">
                     {availableUpgrades.map((upgrade) => {
                         const isBought = activeUpgrades.includes(upgrade.id);
+                        if (isBought) return null;
+                        
                         return (
                             <button
                                 key={upgrade.id}

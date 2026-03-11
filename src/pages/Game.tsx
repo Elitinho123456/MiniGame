@@ -16,6 +16,7 @@ import EquipmentHeader from '../components/EquipmentHeader';
 import InventoryPanel from '../components/InventoryPanel';
 import UpgradesPanel from '../components/UpgradesPanel';
 import CraftingPanel, { type CraftingTask } from '../components/CraftingPanel';
+import FurnacePanel, { type SmeltingState } from '../components/FurnacePanel';
 import PetsPanel from '../components/PetsPanel';
 import ShopPanel from '../components/ShopPanel';
 import Sidebar, { type ActiveTab } from '../components/Sidebar';
@@ -24,6 +25,18 @@ import VillagersPanel from '../components/VillagersPanel';
 
 export default function Game() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('mining');
+  
+  // Tecla ESC para voltar a aba de mineração
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && activeTab !== 'mining') {
+        setActiveTab('mining');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab]);
+
   const [videoQuality, setVideoQuality] = useState<'Baixa' | 'Média' | 'Alta'>('Alta');
   // Estado de Dimensões e Blocos
   const [currentDim, setCurrentDim] = useState<string>('Overworld');
@@ -31,6 +44,9 @@ export default function Game() {
 
   // Inventário
   const [inventory, setInventory] = useState<Record<string, number>>({});
+
+  // Estações
+  const [ownedStations, setOwnedStations] = useState<Record<string, boolean>>({});
 
   // Equipamentos do Jogador (Controla em qual tier a ferramenta está: 0, 1, 2...)
   const [toolsLevel, setToolsLevel] = useState<Record<string, number>>({
@@ -58,6 +74,7 @@ export default function Game() {
 
   const [activeCraft, setActiveCraft] = useState<CraftingTask | null>(null);
   const [activeUpgrades, setActiveUpgrades] = useState<string[]>([]);
+  const [furnaceState, setFurnaceState] = useState<SmeltingState | null>(null);
 
   // Pets
   const [ownedPets, setOwnedPets] = useState<Record<string, { level: number; xp: number }>>({});
@@ -189,26 +206,64 @@ export default function Game() {
       }, 100);
     }
     return () => clearInterval(interval);
-  }, [activeCraft?.toolCategory, activeCraft?.tier, activeCraft?.totalTime]);
+  }, [activeCraft?.toolCategory, activeCraft?.tier, activeCraft?.totalTime, activeCraft?.customRecipe]);
 
   useEffect(() => {
     if (activeCraft && activeCraft.progress >= activeCraft.totalTime) {
-      const category = activeCraft.toolCategory;
-      const nextToolIndex = activeCraft.tier;
-      const nextTool = toolChains[category][nextToolIndex];
-
-      setToolsLevel((prev) => ({
-        ...prev,
-        [category]: prev[category] + 1,
-      }));
-      setToolDurabilities((prev) => ({
-        ...prev,
-        [category]: nextTool.maxDurability,
-      }));
+      if (activeCraft.customRecipe) {
+        const recipe = activeCraft.customRecipe;
+        if (recipe.creates === 'Crafting Table' || recipe.creates === 'Furnace' || recipe.creates === 'Blast Furnace') {
+            setOwnedStations(prev => ({ ...prev, [recipe.creates]: true }));
+        } else {
+            setInventory(prev => ({ ...prev, [recipe.creates]: (prev[recipe.creates] || 0) + recipe.amount }));
+        }
+      } else if (activeCraft.toolCategory && activeCraft.tier !== undefined) {
+          const category = activeCraft.toolCategory;
+          const nextToolIndex = activeCraft.tier;
+          const nextTool = toolChains[category][nextToolIndex];
+          
+          setToolsLevel((prev) => {
+              const currentTier = prev[category] || 0;
+              // Only update max durability if we are actually advancing in tier
+              if (currentTier <= nextToolIndex) {
+                  setToolDurabilities(dPrev => ({
+                      ...dPrev,
+                      [category]: nextTool.maxDurability,
+                  }));
+              } else {
+                  // If crafting a lower tier tool (for fun?), reset it to max ONLY if the current durability of the high tier is lower than the new low tier max? No, just don't overwrite durability of higher tier.
+              }
+              return {
+                  ...prev,
+                  [category]: Math.max(currentTier, nextToolIndex + 1),
+              };
+          });
+      }
       setActiveCraft(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCraft?.progress]);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (furnaceState && furnaceState.progress < furnaceState.totalTime) {
+      interval = setInterval(() => {
+        setFurnaceState((prev) => {
+          if (!prev) return null;
+          const newProgress = prev.progress + 0.1;
+          if (newProgress >= prev.totalTime) {
+            return {
+              ...prev,
+              progress: prev.totalTime,
+              readyCount: prev.readyCount + 1,
+            };
+          }
+          return { ...prev, progress: newProgress };
+        });
+      }, 100);
+    }
+    return () => clearInterval(interval);
+  }, [furnaceState?.progress, furnaceState?.totalTime]);
 
   const blockName = nameMap[currentBlock] || currentBlock;
   const currentDimData = dimensions[currentDim];
@@ -252,46 +307,7 @@ export default function Game() {
     setWarningMessage('');
   }
 
-  // Lógica de Crafting (Compra de Ferramentas)
-  function buyTool(toolCategory: string) {
-    const currentTier = toolsLevel[toolCategory];
-    const nextTool = toolChains[toolCategory][currentTier];
 
-    if (!nextTool) return; // Já está no nível máximo
-
-    // Verifica se tem todos os recursos
-    let canBuy = true;
-    for (const [res, amount] of Object.entries(nextTool.cost)) {
-      if ((inventory[res] || 0) < (amount as number)) canBuy = false;
-    }
-
-    if (canBuy) {
-      // Desconta recursos
-      setInventory((prev) => {
-        const newInv = { ...prev };
-        for (const [res, amount] of Object.entries(nextTool.cost)) {
-          newInv[res] -= amount as number;
-        }
-        return newInv;
-      });
-      if (activeCraft) {
-        alert('Você já está craftando um item!');
-        return;
-      }
-
-      let timeMultiplier = 1;
-      if (activeUpgrades.includes('upg_crafting_1')) timeMultiplier -= 0.2; // 20% mais rápido
-
-      setActiveCraft({
-        toolCategory,
-        tier: currentTier,
-        progress: 0,
-        totalTime: (nextTool.craftTime || 2) * timeMultiplier,
-      });
-    } else {
-      alert('Recursos insuficientes!');
-    }
-  }
 
   // Lógica de Mineração
   function handleMineBlock() {
@@ -399,6 +415,30 @@ export default function Game() {
           ...prev,
           [drop]: (prev[drop] || 0) + dropAmount,
         }));
+      }
+
+      // Drops extras (Folhas e Cascalho)
+      if (currentBlock === 'Oak_Leaves') {
+        const leafDrops: Record<string, number> = {};
+        if (Math.random() < 0.20) leafDrops['Stick'] = dropAmount; // 20%
+        if (Math.random() < 0.05) leafDrops['Apple'] = dropAmount; // 5%
+        
+        if (Object.keys(leafDrops).length > 0) {
+            setInventory((prev) => {
+                const newInv = { ...prev };
+                for (const [key, val] of Object.entries(leafDrops)) {
+                    newInv[key] = (newInv[key] || 0) + val;
+                }
+                return newInv;
+            });
+        }
+      } else if (currentBlock === 'Gravel') {
+        if (Math.random() < 0.10) {
+            setInventory((prev) => ({
+                ...prev,
+                'Flint': (prev['Flint'] || 0) + dropAmount
+            }));
+        }
       }
 
       // Check for Pet Drops (Random Roll 0-100)
@@ -615,7 +655,18 @@ export default function Game() {
               <CraftingPanel
                 toolsLevel={toolsLevel}
                 activeCraft={activeCraft}
-                buyTool={buyTool}
+                inventory={inventory}
+                setInventory={setInventory}
+                ownedStations={ownedStations}
+                setActiveCraft={setActiveCraft}
+                activeUpgrades={activeUpgrades}
+              />
+              <FurnacePanel
+                inventory={inventory}
+                setInventory={setInventory}
+                ownedStations={ownedStations}
+                furnaceState={furnaceState}
+                setFurnaceState={setFurnaceState}
               />
             </>
           )}
