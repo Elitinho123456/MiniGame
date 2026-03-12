@@ -631,7 +631,7 @@ export default function Game() {
         </div>
 
         {/* LADO DIREITO: Gerenciamento (Tabs) */}
-        <div className={`w-full md:w-[400px] lg:w-[500px] bg-stone-100 dark:bg-stone-950 flex flex-col h-screen overflow-y-auto custom-scrollbar border-l border-stone-800 ${activeTab !== 'mining' && activeTab !== 'shop' && activeTab !== 'pets' && activeTab !== 'settings' && activeTab !== 'villagers' ? 'hidden' : ''}`}>
+        <div className={`w-full md:w-100 lg:w-125 bg-stone-100 dark:bg-stone-950 flex flex-col h-screen overflow-y-auto custom-scrollbar border-l border-stone-800 ${activeTab !== 'mining' && activeTab !== 'shop' && activeTab !== 'pets' && activeTab !== 'settings' && activeTab !== 'villagers' ? 'hidden' : ''}`}>
 
           {(activeTab === 'mining' || activeTab === 'shop' || activeTab === 'pets') && (
             <EquipmentHeader

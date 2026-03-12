@@ -29,7 +29,7 @@ export default function CraftingPanel({
     setActiveCraft,
     activeUpgrades
 }: CraftingPanelProps) {
-    const [isCraftingOpen, setIsCraftingOpen] = useState<boolean>(true);
+    const [isCraftingOpen, setIsCraftingOpen] = useState<boolean>(false);
     const [activeSection, setActiveSection] = useState<'manual' | 'bancada'>('manual');
 
     function canAfford(cost: Record<string, number>) {
@@ -142,7 +142,7 @@ export default function CraftingPanel({
                         </button>
                     </div>
 
-                    <div className="p-4 space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
+                    <div className="p-4 space-y-3 max-h-100 overflow-y-auto custom-scrollbar">
                         {activeCraft && (
                             <div className="bg-white dark:bg-stone-800 p-3 border border-emerald-500 rounded-xl mb-4 shadow-sm relative overflow-hidden">
                                 <div

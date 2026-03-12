@@ -24,6 +24,7 @@
 - [ ] Sistema de Estruturas
 - [ ] Sistema de Rebirth
 - [ ] Sistema de Plantação
+- [ ] Sistema de Encantamento
 
 ### Sistema de combate com mobs
 

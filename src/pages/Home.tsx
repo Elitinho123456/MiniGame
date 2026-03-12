@@ -60,7 +60,7 @@ export default function Home() {
 
             <h1 className="text-5xl md:text-8xl font-black text-white mb-6 tracking-tighter leading-none">
               MINERE. <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600">CONSTRUA.</span> <br />
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-emerald-600">CONSTRUA.</span> <br />
               EVOLUA.
             </h1>
 

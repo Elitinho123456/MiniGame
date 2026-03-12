@@ -12,7 +12,7 @@ export default function UpgradesPanel({
     buyUpgrade,
     mineCoins,
 }: UpgradesPanelProps) {
-    const [isUpgradesOpen, setIsUpgradesOpen] = useState<boolean>(true);
+    const [isUpgradesOpen, setIsUpgradesOpen] = useState<boolean>(false);
 
     return (
         <div className="border-b border-stone-300 dark:border-stone-800">
