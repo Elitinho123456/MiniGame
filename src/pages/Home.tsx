@@ -72,6 +72,12 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link
                 to="/game"
+                onClick={() => {
+                  const audio = document.getElementById('background-music') as HTMLAudioElement | null;
+                  if (audio) {
+                    audio.play().catch(e => console.log("Erro ao tocar áudio:", e));
+                  }
+                }}
                 className="group relative flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-[#1a1a1a] px-8 py-4 rounded-xl font-black text-lg transition-all shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:scale-105 active:scale-95"
               >
                 <Play size={20} fill="currentColor" />

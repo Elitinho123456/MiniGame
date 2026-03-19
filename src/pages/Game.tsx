@@ -38,6 +38,23 @@ export default function Game() {
   }, [activeTab]);
 
   const [videoQuality, setVideoQuality] = useState<'Baixa' | 'Média' | 'Alta'>('Alta');
+  const [audioVolume, setAudioVolume] = useState<number>(() => {
+    const audio = document.getElementById('background-music') as HTMLAudioElement | null;
+    return audio ? audio.volume : 0.5;
+  });
+  const [isMuted, setIsMuted] = useState<boolean>(() => {
+    const audio = document.getElementById('background-music') as HTMLAudioElement | null;
+    return audio ? audio.muted : false;
+  });
+
+  useEffect(() => {
+    const audio = document.getElementById('background-music') as HTMLAudioElement | null;
+    if (audio) {
+      audio.volume = audioVolume;
+      audio.muted = isMuted;
+    }
+  }, [audioVolume, isMuted]);
+
   // Estado de Dimensões e Blocos
   const [currentDim, setCurrentDim] = useState<string>('Overworld');
   const [currentBlock, setCurrentBlock] = useState<string>('Grass_Block');
@@ -720,7 +737,14 @@ export default function Game() {
           )}
 
           {activeTab === 'settings' && (
-            <SettingsPanel setVideoQuality={setVideoQuality} videoQuality={videoQuality} />
+            <SettingsPanel 
+                setVideoQuality={setVideoQuality} 
+                videoQuality={videoQuality} 
+                audioVolume={audioVolume}
+                setAudioVolume={setAudioVolume}
+                isMuted={isMuted}
+                setIsMuted={setIsMuted}
+            />
           )}
 
         </div>

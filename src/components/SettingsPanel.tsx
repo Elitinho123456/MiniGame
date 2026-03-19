@@ -1,9 +1,13 @@
 interface SettingsPanelProps {
     videoQuality: 'Baixa' | 'Média' | 'Alta';
     setVideoQuality: (q: 'Baixa' | 'Média' | 'Alta') => void;
+    audioVolume: number;
+    setAudioVolume: (v: number) => void;
+    isMuted: boolean;
+    setIsMuted: (v: boolean) => void;
 }
 
-export default function SettingsPanel({ videoQuality, setVideoQuality }: SettingsPanelProps) {
+export default function SettingsPanel({ videoQuality, setVideoQuality, audioVolume, setAudioVolume, isMuted, setIsMuted }: SettingsPanelProps) {
     return (
         <div className="p-6 h-full flex flex-col bg-stone-900 text-stone-200">
             <h2 className="text-3xl font-black text-white mb-6 flex items-center gap-3">
@@ -40,12 +44,36 @@ export default function SettingsPanel({ videoQuality, setVideoQuality }: Setting
                 </section>
 
                 {/* AUDIO */}
-                <section className="bg-stone-950 p-6 rounded-2xl border border-stone-800 shadow-lg opacity-50 cursor-not-allowed">
-                    <h3 className="text-xl font-bold text-emerald-500 mb-4 border-b border-stone-800 pb-2">Áudio</h3>
+                <section className="bg-stone-950 p-6 rounded-2xl border border-stone-800 shadow-lg">
+                    <div className="flex justify-between items-center mb-4 border-b border-stone-800 pb-2">
+                        <h3 className="text-xl font-bold text-emerald-500">Áudio</h3>
+                        <button 
+                            onClick={() => setIsMuted(!isMuted)}
+                            className={`px-3 py-1 rounded font-bold text-sm transition-colors cursor-pointer ${
+                                isMuted 
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/50' 
+                                : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
+                            }`}
+                        >
+                            {isMuted ? '🔇 Mutado' : '🔊 Som Ativado'}
+                        </button>
+                    </div>
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <span className="text-stone-400 font-bold">Volume Principal</span>
-                            <span className="text-xs bg-stone-800 px-2 py-1 rounded text-stone-500">Em breve</span>
+                        <div className="flex flex-col gap-2 transition-opacity" style={{ opacity: isMuted ? 0.5 : 1 }}>
+                            <label className="text-stone-400 font-bold flex justify-between">
+                                <span>Volume Principal</span>
+                                <span>{Math.round(audioVolume * 100)}%</span>
+                            </label>
+                            <input 
+                                type="range" 
+                                min="0" 
+                                max="1" 
+                                step="0.01" 
+                                value={audioVolume}
+                                onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
+                                disabled={isMuted}
+                                className={`w-full accent-emerald-500 bg-stone-800 rounded-lg appearance-none h-2 ${isMuted ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                            />
                         </div>
                     </div>
                 </section>
