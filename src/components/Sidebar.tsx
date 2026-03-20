@@ -48,7 +48,7 @@ export default function Sidebar({ activeTab, setActiveTab, isLanding = false }: 
                             } ${isLanding ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title={isLanding ? 'Disponível no jogo' : (!isExpanded ? tab.label : '')}
                     >
-                        <span className="flex-shrink-0">{tab.icon}</span>
+                        <span className="shrink-0">{tab.icon}</span>
                         {isExpanded && (
                             <div className="flex flex-col items-start overflow-hidden">
                                 <span className="whitespace-nowrap">{tab.label}</span>
@@ -64,7 +64,7 @@ export default function Sidebar({ activeTab, setActiveTab, isLanding = false }: 
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all text-sm font-medium text-stone-300 hover:bg-white/5 hover:text-white"
                         title={!isExpanded ? 'Documentação' : ''}
                     >
-                        <FileText size={20} className="flex-shrink-0" />
+                        <FileText size={20} className="shrink-0" />
                         {isExpanded && <span className="whitespace-nowrap">Documentação</span>}
                     </button>
                     <button
@@ -72,7 +72,7 @@ export default function Sidebar({ activeTab, setActiveTab, isLanding = false }: 
                         title={!isExpanded ? 'Mods' : ''}
                         disabled
                     >
-                        <CircleFadingPlus size={20} className="flex-shrink-0" />
+                        <CircleFadingPlus size={20} className="shrink-0" />
                         {isExpanded && <span className="whitespace-nowrap">Mods</span>}
                     </button>
                     <button
@@ -80,14 +80,14 @@ export default function Sidebar({ activeTab, setActiveTab, isLanding = false }: 
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all text-sm font-medium text-stone-300 hover:bg-white/5 hover:text-white"
                         title={!isExpanded ? 'Início/Sair' : ''}
                     >
-                        <LogOut size={20} className="flex-shrink-0" />
+                        <LogOut size={20} className="shrink-0" />
                         {isExpanded && <span className="whitespace-nowrap">Sair</span>}
                     </button>
                 </div>
             </nav>
 
             <div className="p-4 border-t border-stone-800/50 mt-auto flex items-center gap-3 cursor-pointer hover:bg-white/5 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 text-white shadow-md">
+                <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 text-white shadow-md">
                     <User size={16} />
                 </div>
                 {isExpanded && (

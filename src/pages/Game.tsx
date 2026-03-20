@@ -25,13 +25,36 @@ import VillagersPanel from '../components/VillagersPanel';
 
 export default function Game() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('mining');
-  
+
   // Tecla ESC para voltar a aba de mineração
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && activeTab !== 'mining') {
         setActiveTab('mining');
       }
+      switch (e.key) {
+
+        case '1':
+          setActiveTab('shop')
+          break;
+
+        case '2':
+          setActiveTab('pets')
+          break;
+
+        case '3':
+          setActiveTab('villagers')
+          break;
+
+        case '4':
+          setActiveTab('settings')
+          break;
+
+        default:
+          break;
+
+      }
+
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -99,6 +122,9 @@ export default function Game() {
 
   // Villagers
   const [ownedVillagers, setOwnedVillagers] = useState<Record<string, number>>({});
+
+  // Debug
+  const [isDebugMode, setIsDebugMode] = useState<boolean>(false);
 
   useEffect(() => {
     const idleInterval = setInterval(() => {
@@ -230,31 +256,31 @@ export default function Game() {
       if (activeCraft.customRecipe) {
         const recipe = activeCraft.customRecipe;
         if (recipe.creates === 'Crafting Table' || recipe.creates === 'Furnace' || recipe.creates === 'Blast Furnace') {
-            setOwnedStations(prev => ({ ...prev, [recipe.creates]: true }));
+          setOwnedStations(prev => ({ ...prev, [recipe.creates]: true }));
         } else {
-            setInventory(prev => ({ ...prev, [recipe.creates]: (prev[recipe.creates] || 0) + recipe.amount }));
+          setInventory(prev => ({ ...prev, [recipe.creates]: (prev[recipe.creates] || 0) + recipe.amount }));
         }
       } else if (activeCraft.toolCategory && activeCraft.tier !== undefined) {
-          const category = activeCraft.toolCategory;
-          const nextToolIndex = activeCraft.tier;
-          const nextTool = toolChains[category][nextToolIndex];
-          
-          setToolsLevel((prev) => {
-              const currentTier = prev[category] || 0;
-              // Only update max durability if we are actually advancing in tier
-              if (currentTier <= nextToolIndex) {
-                  setToolDurabilities(dPrev => ({
-                      ...dPrev,
-                      [category]: nextTool.maxDurability,
-                  }));
-              } else {
-                  // If crafting a lower tier tool (for fun?), reset it to max ONLY if the current durability of the high tier is lower than the new low tier max? No, just don't overwrite durability of higher tier.
-              }
-              return {
-                  ...prev,
-                  [category]: Math.max(currentTier, nextToolIndex + 1),
-              };
-          });
+        const category = activeCraft.toolCategory;
+        const nextToolIndex = activeCraft.tier;
+        const nextTool = toolChains[category][nextToolIndex];
+
+        setToolsLevel((prev) => {
+          const currentTier = prev[category] || 0;
+          // Only update max durability if we are actually advancing in tier
+          if (currentTier <= nextToolIndex) {
+            setToolDurabilities(dPrev => ({
+              ...dPrev,
+              [category]: nextTool.maxDurability,
+            }));
+          } else {
+            // If crafting a lower tier tool (for fun?), reset it to max ONLY if the current durability of the high tier is lower than the new low tier max? No, just don't overwrite durability of higher tier.
+          }
+          return {
+            ...prev,
+            [category]: Math.max(currentTier, nextToolIndex + 1),
+          };
+        });
       }
       setActiveCraft(null);
     }
@@ -292,23 +318,27 @@ export default function Game() {
     if (!upg) return;
 
     let canBuy = true;
-    for (const [res, amount] of Object.entries(upg.cost)) {
-      if ((inventory[res] || 0) < (amount as number)) canBuy = false;
-    }
-    if (upg.mineCoinCost && mineCoins < upg.mineCoinCost) {
-      canBuy = false;
+    if (!isDebugMode) {
+      for (const [res, amount] of Object.entries(upg.cost)) {
+        if ((inventory[res] || 0) < (amount as number)) canBuy = false;
+      }
+      if (upg.mineCoinCost && mineCoins < upg.mineCoinCost) {
+        canBuy = false;
+      }
     }
 
     if (canBuy) {
-      setInventory((prev) => {
-        const newInv = { ...prev };
-        for (const [res, amount] of Object.entries(upg.cost)) {
-          newInv[res] -= amount as number;
+      if (!isDebugMode) {
+        setInventory((prev) => {
+          const newInv = { ...prev };
+          for (const [res, amount] of Object.entries(upg.cost)) {
+            newInv[res] -= amount as number;
+          }
+          return newInv;
+        });
+        if (upg.mineCoinCost) {
+          setMineCoins(prev => prev - upg.mineCoinCost!);
         }
-        return newInv;
-      });
-      if (upg.mineCoinCost) {
-        setMineCoins(prev => prev - upg.mineCoinCost!);
       }
       setActiveUpgrades((prev) => [...prev, upgradeId]);
     } else {
@@ -446,22 +476,22 @@ export default function Game() {
         const leafDrops: Record<string, number> = {};
         if (Math.random() < 0.20) leafDrops['Stick'] = dropAmount; // 20%
         if (Math.random() < 0.05) leafDrops['Apple'] = dropAmount; // 5%
-        
+
         if (Object.keys(leafDrops).length > 0) {
-            setInventory((prev) => {
-                const newInv = { ...prev };
-                for (const [key, val] of Object.entries(leafDrops)) {
-                    newInv[key] = (newInv[key] || 0) + val;
-                }
-                return newInv;
-            });
+          setInventory((prev) => {
+            const newInv = { ...prev };
+            for (const [key, val] of Object.entries(leafDrops)) {
+              newInv[key] = (newInv[key] || 0) + val;
+            }
+            return newInv;
+          });
         }
       } else if (currentBlock === 'Gravel') {
         if (Math.random() < 0.10) {
-            setInventory((prev) => ({
-                ...prev,
-                'Flint': (prev['Flint'] || 0) + dropAmount
-            }));
+          setInventory((prev) => ({
+            ...prev,
+            'Flint': (prev['Flint'] || 0) + dropAmount
+          }));
         }
       }
 
@@ -604,9 +634,11 @@ export default function Game() {
               mineCoins={mineCoins}
               setMineCoins={setMineCoins}
               activePotions={activePotions}
+              isDebugMode={isDebugMode}
               onBuyPotion={(potionId, cost, durationMs) => {
-                if (mineCoins >= cost) {
-                  setMineCoins(prev => prev - cost);
+                const finalCost = isDebugMode ? 0 : cost;
+                if (mineCoins >= finalCost) {
+                  setMineCoins(prev => prev - finalCost);
                   setActivePotions(prev => ({
                     ...prev,
                     [potionId]: Date.now() + durationMs
@@ -724,6 +756,7 @@ export default function Game() {
                     activeUpgrades={activeUpgrades}
                     buyUpgrade={buyUpgrade}
                     mineCoins={mineCoins}
+                    isDebugMode={isDebugMode}
                   />
                   <CraftingPanel
                     toolsLevel={toolsLevel}
@@ -733,6 +766,7 @@ export default function Game() {
                     ownedStations={ownedStations}
                     setActiveCraft={setActiveCraft}
                     activeUpgrades={activeUpgrades}
+                    isDebugMode={isDebugMode}
                   />
                   <FurnacePanel
                     inventory={inventory}
@@ -755,13 +789,36 @@ export default function Game() {
               )}
 
               {activeTab === 'settings' && (
-                <SettingsPanel 
-                    setVideoQuality={setVideoQuality} 
-                    videoQuality={videoQuality} 
-                    audioVolume={audioVolume}
-                    setAudioVolume={setAudioVolume}
-                    isMuted={isMuted}
-                    setIsMuted={setIsMuted}
+                <SettingsPanel
+                  setVideoQuality={setVideoQuality}
+                  videoQuality={videoQuality}
+                  audioVolume={audioVolume}
+                  setAudioVolume={setAudioVolume}
+                  isMuted={isMuted}
+                  setIsMuted={setIsMuted}
+                  isDebugMode={isDebugMode}
+                  setIsDebugMode={setIsDebugMode}
+                  onCheatAddCoins={(amount) => setMineCoins(prev => prev + amount)}
+                  onCheatAddResources={() => {
+                    setInventory(prev => {
+                      const newInv = { ...prev };
+                      const allResources = ['Dirt', 'Wood', 'Cobblestone', 'Iron Ingot', 'Gold Ingot', 'Diamond', 'Netherite Ingot', 'Oak Log', 'Sand', 'Gravel', 'Raw Iron', 'Raw Gold', 'Ancient Debris', 'Stick', 'Oak Planks', 'Flint', 'Apple', 'Netherite Scrap', 'Coal', 'Raw Copper'];
+                      allResources.forEach(res => {
+                        newInv[res] = (newInv[res] || 0) + 1000;
+                      });
+                      return newInv;
+                    });
+                  }}
+                  onCheatUnlockPets={() => {
+                    setOwnedPets(prev => {
+                      const newPets = { ...prev };
+                      availablePets.forEach(pet => {
+                        if (!newPets[pet.id]) newPets[pet.id] = { level: 1, xp: 0 };
+                      });
+                      return newPets;
+                    });
+                    alert('Todos os pets desbloqueados!');
+                  }}
                 />
               )}
 

@@ -1,18 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { availableUpgrades } from '../assets/consts';
 
 interface UpgradesPanelProps {
     activeUpgrades: string[];
     buyUpgrade: (id: string) => void;
     mineCoins: number;
+    isDebugMode?: boolean;
 }
 
 export default function UpgradesPanel({
     activeUpgrades,
     buyUpgrade,
     mineCoins,
+    isDebugMode
 }: UpgradesPanelProps) {
     const [isUpgradesOpen, setIsUpgradesOpen] = useState<boolean>(false);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+            if (e.key.toLowerCase() === 'u') {
+                setIsUpgradesOpen(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     return (
         <div className="border-b border-stone-300 dark:border-stone-800">
@@ -27,7 +40,7 @@ export default function UpgradesPanel({
                         className="w-8 h-8 rounded drop-shadow-sm"
                         onError={(e) => (e.currentTarget.style.display = 'none')}
                     />
-                    Upgrades
+                    Melhorias
                 </span>
                 <img
                     src="./src/assets/DownArrow.png"
@@ -42,7 +55,7 @@ export default function UpgradesPanel({
                     {availableUpgrades.map((upgrade) => {
                         const isBought = activeUpgrades.includes(upgrade.id);
                         if (isBought) return null;
-                        
+
                         return (
                             <button
                                 key={upgrade.id}
@@ -74,8 +87,8 @@ export default function UpgradesPanel({
                                         <div className="mt-2 text-xs text-stone-500">
                                             Custo:{' '}
                                             {upgrade.mineCoinCost && (
-                                                <span className={`ml-1 inline-block px-1.5 py-0.5 rounded font-bold ${mineCoins >= upgrade.mineCoinCost ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-500' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-500'}`}>
-                                                    {upgrade.mineCoinCost} MC
+                                                <span className={`ml-1 inline-block px-1.5 py-0.5 rounded font-bold ${(isDebugMode || mineCoins >= upgrade.mineCoinCost) ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-500' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-500'}`}>
+                                                    {isDebugMode ? 0 : upgrade.mineCoinCost} MC
                                                 </span>
                                             )}
                                             {Object.entries(upgrade.cost).map(([res, amount]) => (
@@ -83,7 +96,7 @@ export default function UpgradesPanel({
                                                     key={res}
                                                     className="ml-1 inline-block bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded text-amber-800 dark:text-amber-500 font-bold"
                                                 >
-                                                    {amount as number} {res}
+                                                    {isDebugMode ? 0 : amount as number} {res}
                                                 </span>
                                             ))}
                                         </div>

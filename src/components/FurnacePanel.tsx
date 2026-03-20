@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { furnaceRecipes, blastFurnaceRecipes, fuelItems, nameMap } from '../assets/consts';
 
 export type SmeltingState = {
@@ -28,7 +28,18 @@ export default function FurnacePanel({
 }: FurnacePanelProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedType, setSelectedType] = useState<'furnace' | 'blast_furnace'>('furnace');
-    
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+            if (e.key.toLowerCase() === 'f') {
+                setIsOpen(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     // State for setting up a new task
     const [selectedInput, setSelectedInput] = useState<string>('');
     const [selectedFuel, setSelectedFuel] = useState<string>('');
@@ -48,7 +59,7 @@ export default function FurnacePanel({
             alert('Você não tem esse combustível!');
             return;
         }
-        
+
         const recipe = recipes[selectedInput];
         if (!recipe) return;
 
@@ -68,7 +79,7 @@ export default function FurnacePanel({
             output: recipe.output,
             readyCount: 0
         });
-        
+
         // Reset selections to default
         setSelectedInput('');
         setSelectedFuel('');
@@ -80,7 +91,7 @@ export default function FurnacePanel({
                 ...prev,
                 [furnaceState.output]: (prev[furnaceState.output] || 0) + furnaceState.readyCount
             }));
-            
+
             // If still melting something, keep it running but reset readyCount
             if (furnaceState.progress > 0 && furnaceState.progress < furnaceState.totalTime) {
                 setFurnaceState(prev => prev ? { ...prev, readyCount: 0 } : null);
@@ -103,7 +114,7 @@ export default function FurnacePanel({
                         className="w-8 h-8 rounded drop-shadow-sm"
                         onError={(e) => (e.currentTarget.style.display = 'none')}
                     />
-                    Fornalha
+                    Fundição
                 </span>
                 <img
                     src="./src/assets/DownArrow.png"
@@ -115,15 +126,15 @@ export default function FurnacePanel({
 
             {isOpen && (
                 <div className="bg-stone-50 dark:bg-stone-900/50 p-4">
-                    
+
                     {/* Tabs for Furnace Types */}
                     <div className="flex gap-2 mb-4">
                         <button
                             onClick={() => setSelectedType('furnace')}
                             disabled={!ownedStations['Furnace'] || isSmelting}
                             className={`flex-1 py-2 px-3 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 
-                                ${selectedType === 'furnace' 
-                                    ? 'bg-amber-500 text-white shadow-md' 
+                                ${selectedType === 'furnace'
+                                    ? 'bg-amber-500 text-white shadow-md'
                                     : 'bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-300'}
                                 ${!ownedStations['Furnace'] ? 'opacity-50 cursor-not-allowed' : ''}
                                 ${isSmelting && selectedType !== 'furnace' ? 'opacity-30 cursor-not-allowed' : ''}`}
@@ -135,8 +146,8 @@ export default function FurnacePanel({
                             onClick={() => setSelectedType('blast_furnace')}
                             disabled={!ownedStations['Blast Furnace'] || isSmelting}
                             className={`flex-1 py-2 px-3 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2
-                                ${selectedType === 'blast_furnace' 
-                                    ? 'bg-amber-600 text-white shadow-md' 
+                                ${selectedType === 'blast_furnace'
+                                    ? 'bg-amber-600 text-white shadow-md'
                                     : 'bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-300'}
                                 ${!ownedStations['Blast Furnace'] ? 'opacity-50 cursor-not-allowed' : ''}
                                 ${isSmelting && selectedType !== 'blast_furnace' ? 'opacity-30 cursor-not-allowed' : ''}`}
@@ -147,20 +158,20 @@ export default function FurnacePanel({
                     </div>
 
                     <div className="bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-inner relative overflow-hidden flex flex-col items-center">
-                        
+
                         {/* Background subtle glow if melting */}
                         {isSmelting && (
                             <div className="absolute inset-0 bg-linear-to-t from-orange-500/10 to-transparent pointer-events-none animate-pulse"></div>
                         )}
 
                         <div className="flex w-full items-center justify-between gap-4 z-10 relative">
-                            
+
                             {/* Inputs Column */}
                             <div className="flex flex-col gap-3 flex-1">
                                 <div className="flex flex-col">
                                     <label className="text-[10px] font-black uppercase text-stone-400 tracking-wider mb-1 ml-1">Minério</label>
-                                    <select 
-                                        value={isSmelting ? furnaceState.input : selectedInput} 
+                                    <select
+                                        value={isSmelting ? furnaceState.input : selectedInput}
                                         onChange={(e) => setSelectedInput(e.target.value)}
                                         disabled={isSmelting}
                                         className="bg-stone-100 dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-xl p-2 font-semibold text-sm outline-none w-full disabled:opacity-80"
@@ -175,8 +186,8 @@ export default function FurnacePanel({
                                 </div>
                                 <div className="flex flex-col">
                                     <label className="text-[10px] font-black uppercase text-orange-400 tracking-wider mb-1 ml-1">Combustível</label>
-                                    <select 
-                                        value={isSmelting ? furnaceState.fuel : selectedFuel} 
+                                    <select
+                                        value={isSmelting ? furnaceState.fuel : selectedFuel}
                                         onChange={(e) => setSelectedFuel(e.target.value)}
                                         disabled={isSmelting}
                                         className="bg-stone-100 dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-xl p-2 font-semibold text-sm outline-none w-full disabled:opacity-80"

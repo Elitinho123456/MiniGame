@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 interface SettingsPanelProps {
     videoQuality: 'Baixa' | 'Média' | 'Alta';
     setVideoQuality: (q: 'Baixa' | 'Média' | 'Alta') => void;
@@ -5,9 +7,25 @@ interface SettingsPanelProps {
     setAudioVolume: (v: number) => void;
     isMuted: boolean;
     setIsMuted: (v: boolean) => void;
+    isDebugMode?: boolean;
+    setIsDebugMode?: (v: boolean) => void;
+    onCheatAddCoins?: (amount: number) => void;
+    onCheatAddResources?: () => void;
+    onCheatUnlockPets?: () => void;
 }
 
-export default function SettingsPanel({ videoQuality, setVideoQuality, audioVolume, setAudioVolume, isMuted, setIsMuted }: SettingsPanelProps) {
+export default function SettingsPanel({ videoQuality, setVideoQuality, audioVolume, setAudioVolume, isMuted, setIsMuted, isDebugMode, setIsDebugMode, onCheatAddCoins, onCheatAddResources, onCheatUnlockPets }: SettingsPanelProps) {
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+            if (e.key.toLowerCase() === 'd') {
+                setIsDebugMode?.(!isDebugMode);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isDebugMode, setIsDebugMode]);
+
     return (
         <div className="p-6 h-full flex flex-col bg-stone-900 text-stone-200">
             <h2 className="text-3xl font-black text-white mb-6 flex items-center gap-3">
@@ -28,8 +46,8 @@ export default function SettingsPanel({ videoQuality, setVideoQuality, audioVolu
                                         key={q}
                                         onClick={() => setVideoQuality(q as 'Baixa' | 'Média' | 'Alta')}
                                         className={`flex-1 py-2 rounded-lg font-bold border transition-all ${videoQuality === q
-                                                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                                                : 'bg-stone-900 border-stone-700 text-stone-400 hover:bg-stone-800'
+                                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                                            : 'bg-stone-900 border-stone-700 text-stone-400 hover:bg-stone-800'
                                             }`}
                                     >
                                         {q}
@@ -47,13 +65,12 @@ export default function SettingsPanel({ videoQuality, setVideoQuality, audioVolu
                 <section className="bg-stone-950 p-6 rounded-2xl border border-stone-800 shadow-lg">
                     <div className="flex justify-between items-center mb-4 border-b border-stone-800 pb-2">
                         <h3 className="text-xl font-bold text-emerald-500">Áudio</h3>
-                        <button 
+                        <button
                             onClick={() => setIsMuted(!isMuted)}
-                            className={`px-3 py-1 rounded font-bold text-sm transition-colors cursor-pointer ${
-                                isMuted 
-                                ? 'bg-red-500/20 text-red-400 border border-red-500/50' 
+                            className={`px-3 py-1 rounded font-bold text-sm transition-colors cursor-pointer ${isMuted
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/50'
                                 : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
-                            }`}
+                                }`}
                         >
                             {isMuted ? '🔇 Mutado' : '🔊 Som Ativado'}
                         </button>
@@ -64,11 +81,11 @@ export default function SettingsPanel({ videoQuality, setVideoQuality, audioVolu
                                 <span>Volume Principal</span>
                                 <span>{Math.round(audioVolume * 100)}%</span>
                             </label>
-                            <input 
-                                type="range" 
-                                min="0" 
-                                max="1" 
-                                step="0.01" 
+                            <input
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.01"
                                 value={audioVolume}
                                 onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
                                 disabled={isMuted}
@@ -76,6 +93,39 @@ export default function SettingsPanel({ videoQuality, setVideoQuality, audioVolu
                             />
                         </div>
                     </div>
+                </section>
+
+                {/* DEBUG MODE */}
+                <section className="bg-stone-950 p-6 rounded-2xl border border-stone-800 shadow-lg mb-8">
+                    <div className="flex justify-between items-center mb-4 border-b border-stone-800 pb-2">
+                        <h3 className="text-xl font-bold text-emerald-500">Modo Debug</h3>
+                        {setIsDebugMode && (
+                            <button
+                                onClick={() => setIsDebugMode?.(!isDebugMode)}
+                                className={`px-3 py-1 rounded font-bold text-sm transition-colors cursor-pointer ${isDebugMode
+                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
+                                    : 'bg-stone-500/20 text-stone-400 border border-stone-500/50'
+                                    }`}
+                            >
+                                {isDebugMode ? '🛠️ Ativado' : 'Desativado'}
+                            </button>
+                        )}
+                    </div>
+                    {isDebugMode && (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 gap-2">
+                                <button onClick={() => onCheatAddCoins?.(1000)} className="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded">
+                                    +1000 MineCoins
+                                </button>
+                                <button onClick={() => onCheatAddResources?.()} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded">
+                                    +1000 Todos os Recursos
+                                </button>
+                                <button onClick={() => onCheatUnlockPets?.()} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded">
+                                    Desbloquear Todos os Pets
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </section>
 
                 {/* IDIOMA */}

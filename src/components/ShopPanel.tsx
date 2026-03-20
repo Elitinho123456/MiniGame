@@ -9,6 +9,7 @@ interface ShopPanelProps {
     setMineCoins: React.Dispatch<React.SetStateAction<number>>;
     onBuyPotion: (potionId: string, cost: number, durationMs: number) => void;
     activePotions: Record<string, number>;
+    isDebugMode?: boolean;
 }
 
 const potions = [
@@ -106,6 +107,7 @@ export default function ShopPanel({
     setMineCoins,
     onBuyPotion,
     activePotions,
+    isDebugMode
 }: ShopPanelProps) {
     const [activeTab, setActiveTab] = useState<'ofertas' | 'vender' | 'pocoes'>('ofertas');
     const [sellAmount, setSellAmount] = useState<Record<string, number>>({});
@@ -144,7 +146,7 @@ export default function ShopPanel({
     };
 
     const handleBuyPotion = (potion: typeof potions[0]) => {
-        if (mineCoins < potion.cost) return;
+        if (!isDebugMode && mineCoins < potion.cost) return;
         onBuyPotion(potion.id, potion.cost, potion.durationMs);
         setPurchaseFlash(potion.id);
         setTimeout(() => setPurchaseFlash(null), 600);
@@ -264,14 +266,14 @@ export default function ShopPanel({
                                                 ) : (
                                                     <motion.button
                                                         onClick={() => handleBuyPotion(potion)}
-                                                        disabled={mineCoins < potion.cost}
-                                                        className={`mt-3 w-full py-2 rounded-xl font-black text-sm transition-all ${mineCoins >= potion.cost
+                                                        disabled={!isDebugMode && mineCoins < potion.cost}
+                                                        className={`mt-3 w-full py-2 rounded-xl font-black text-sm transition-all ${(isDebugMode || mineCoins >= potion.cost)
                                                             ? 'bg-linear-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 hover:shadow-green-500/50 active:scale-95'
                                                             : 'bg-stone-800 text-stone-500 cursor-not-allowed'
                                                             }`}
                                                         whileTap={{ scale: 0.95 }}
                                                     >
-                                                        {potion.cost} MC
+                                                        {isDebugMode ? 0 : potion.cost} MC
                                                     </motion.button>
                                                 )}
                                             </div>
@@ -328,14 +330,14 @@ export default function ShopPanel({
                                                 ) : (
                                                     <motion.button
                                                         onClick={() => handleBuyPotion(potion)}
-                                                        disabled={mineCoins < potion.cost}
-                                                        className={`mt-3 w-full py-2 rounded-xl font-black text-sm transition-all ${mineCoins >= potion.cost
+                                                        disabled={!isDebugMode && mineCoins < potion.cost}
+                                                        className={`mt-3 w-full py-2 rounded-xl font-black text-sm transition-all ${(isDebugMode || mineCoins >= potion.cost)
                                                             ? 'bg-linear-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 hover:shadow-green-500/50 active:scale-95'
                                                             : 'bg-stone-800 text-stone-500 cursor-not-allowed'
                                                             }`}
                                                         whileTap={{ scale: 0.95 }}
                                                     >
-                                                        {potion.cost} MC
+                                                        {isDebugMode ? 0 : potion.cost} MC
                                                     </motion.button>
                                                 )}
                                             </div>
@@ -516,14 +518,14 @@ export default function ShopPanel({
                                                 ) : (
                                                     <motion.button
                                                         onClick={() => handleBuyPotion(potion)}
-                                                        disabled={mineCoins < potion.cost}
+                                                        disabled={!isDebugMode && mineCoins < potion.cost}
                                                         whileTap={{ scale: 0.9 }}
-                                                        className={`shrink-0 py-2.5 px-5 rounded-xl font-black text-sm transition-all ${mineCoins >= potion.cost
+                                                        className={`shrink-0 py-2.5 px-5 rounded-xl font-black text-sm transition-all ${(isDebugMode || mineCoins >= potion.cost)
                                                             ? 'bg-linear-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/20 hover:shadow-green-500/40'
                                                             : 'bg-stone-800 text-stone-500 cursor-not-allowed'
                                                             }`}
                                                     >
-                                                        {potion.cost} MC
+                                                        {isDebugMode ? 0 : potion.cost} MC
                                                     </motion.button>
                                                 )}
                                             </div>

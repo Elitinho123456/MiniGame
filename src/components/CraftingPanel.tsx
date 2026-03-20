@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toolChains, handRecipes, workbenchRecipes } from '../assets/consts';
 
 export type CraftingTask = {
@@ -18,6 +18,7 @@ interface CraftingPanelProps {
     ownedStations: Record<string, boolean>;
     setActiveCraft: React.Dispatch<React.SetStateAction<CraftingTask | null>>;
     activeUpgrades: string[];
+    isDebugMode?: boolean;
 }
 
 export default function CraftingPanel({
@@ -27,12 +28,25 @@ export default function CraftingPanel({
     setInventory,
     ownedStations,
     setActiveCraft,
-    activeUpgrades
+    activeUpgrades,
+    isDebugMode
 }: CraftingPanelProps) {
     const [isCraftingOpen, setIsCraftingOpen] = useState<boolean>(false);
     const [activeSection, setActiveSection] = useState<'manual' | 'bancada'>('manual');
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+            if (e.key.toLowerCase() === 'c') {
+                setIsCraftingOpen(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     function canAfford(cost: Record<string, number>) {
+        if (isDebugMode) return true;
         for (const [res, amount] of Object.entries(cost)) {
             if ((inventory[res] || 0) < amount) return false;
         }
@@ -40,6 +54,7 @@ export default function CraftingPanel({
     }
 
     function deductCost(cost: Record<string, number>) {
+        if (isDebugMode) return;
         setInventory(prev => {
             const next = { ...prev };
             for (const [res, amount] of Object.entries(cost)) {
@@ -67,7 +82,7 @@ export default function CraftingPanel({
             customRecipe: recipe,
             name: recipe.name,
             progress: 0,
-            totalTime: (recipe.craftTime || 2) * timeMultiplier,
+            totalTime: isDebugMode ? 0 : (recipe.craftTime || 2) * timeMultiplier,
         });
     }
 
@@ -91,7 +106,7 @@ export default function CraftingPanel({
             tier,
             name: tool.name,
             progress: 0,
-            totalTime: (tool.craftTime || 2) * timeMultiplier,
+            totalTime: isDebugMode ? 0 : (tool.craftTime || 2) * timeMultiplier,
         });
     }
 
@@ -108,7 +123,7 @@ export default function CraftingPanel({
                         className="w-8 h-8 rounded drop-shadow-sm"
                         onError={(e) => (e.currentTarget.style.display = 'none')}
                     />
-                    Crafting
+                    Criação
                 </span>
                 <img
                     src="./src/assets/DownArrow.png"
@@ -131,9 +146,9 @@ export default function CraftingPanel({
                         </button>
                         <button
                             onClick={() => setActiveSection('bancada')}
-                            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeSection === 'bancada' ? 'bg-white dark:bg-stone-800 text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-500' : 'text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800/50'} ${!ownedStations['Crafting Table'] ? 'opacity-50' : ''}`}
-                            disabled={!ownedStations['Crafting Table']}
-                            title={!ownedStations['Crafting Table'] ? 'Crafte uma Bancada de Trabalho antes' : ''}
+                            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeSection === 'bancada' ? 'bg-white dark:bg-stone-800 text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-500' : 'text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800/50'} ${!ownedStations['Crafting Table'] && !isDebugMode ? 'opacity-50' : ''}`}
+                            disabled={!ownedStations['Crafting Table'] && !isDebugMode}
+                            title={!ownedStations['Crafting Table'] && !isDebugMode ? 'Crafte uma Bancada de Trabalho antes' : ''}
                         >
                             <div className="flex justify-center items-center gap-2">
                                 <img src="/Crafting_Table.webp" className="w-5 h-5 drop-shadow" alt="" onError={(e) => (e.currentTarget.style.display = 'none')} />
@@ -202,8 +217,8 @@ export default function CraftingPanel({
                                     <button
                                         key={recipe.id}
                                         onClick={() => handleHandCraft(recipe)}
-                                        className={`w-full text-left bg-white dark:bg-stone-800 border p-3 rounded-xl transition-colors flex gap-3 group shadow-sm ${ownedStations[recipe.creates] && ['Furnace', 'Blast Furnace'].includes(recipe.creates) ? 'opacity-50 border-stone-300 dark:border-stone-700 cursor-not-allowed' : 'border-stone-200 dark:border-stone-700 hover:border-amber-500 cursor-pointer'}`}
-                                        disabled={ownedStations[recipe.creates] && ['Furnace', 'Blast Furnace'].includes(recipe.creates)}
+                                        className={`w-full text-left bg-white dark:bg-stone-800 border p-3 rounded-xl transition-colors flex gap-3 group shadow-sm ${ownedStations[recipe.creates] && ['Furnace', 'Blast Furnace'].includes(recipe.creates) && !isDebugMode ? 'opacity-50 border-stone-300 dark:border-stone-700 cursor-not-allowed' : 'border-stone-200 dark:border-stone-700 hover:border-amber-500 cursor-pointer'}`}
+                                        disabled={ownedStations[recipe.creates] && ['Furnace', 'Blast Furnace'].includes(recipe.creates) && !isDebugMode}
                                     >
                                         <div className="w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-2xl border border-stone-200 group-hover:scale-105 transition-transform p-1">
                                             <img src={recipe.icon} alt={recipe.name} className="w-full h-full object-contain drop-shadow-sm" onError={(e) => (e.currentTarget.style.display = 'none')} />
@@ -226,7 +241,7 @@ export default function CraftingPanel({
                                         </div>
                                     </button>
                                 ))}
-                                
+
                                 <div className="w-full h-px bg-stone-300 dark:bg-stone-700 my-4" />
                                 <h3 className="font-black text-stone-400 uppercase text-xs tracking-wider px-2">Ferramentas Disponíveis</h3>
 
@@ -235,38 +250,38 @@ export default function CraftingPanel({
                                     const currentTier = toolsLevel[toolCategory] || 0;
                                     // Make sure we have a valid chain
                                     if (!toolChains[toolCategory]) return null;
-                                    
+
                                     const availableTools = toolChains[toolCategory].slice(currentTier, currentTier + 2); // Show next tier and the one after
 
                                     return availableTools.map((tool, index) => {
                                         const actualTierIndex = currentTier + index;
                                         return (
-                                        <button
-                                            key={tool.id}
-                                            onClick={() => startToolCraft(toolCategory, actualTierIndex)}
-                                            className="w-full mt-2 text-left bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-3 rounded-xl hover:border-emerald-500 transition-colors flex gap-3 group shadow-sm"
-                                        >
-                                            <div className="relative w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-2xl border border-stone-200 group-hover:scale-105 transition-transform p-1">
-                                                <img src={tool.icon} alt={tool.name} className="w-full h-full object-contain drop-shadow-sm" onError={(e) => (e.currentTarget.style.display = 'none')} />
-                                                {index > 0 && <span className="absolute -top-2 -right-4 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">+ Avançado</span>}
-                                            </div>
-                                            <div className="flex-1 px-1">
-                                                <h4 className="font-bold text-stone-800 dark:text-stone-200 pr-4">
-                                                    {tool.name}
-                                                </h4>
-                                                <div className="mt-2 text-xs text-stone-500">
-                                                    Custo:
-                                                    {Object.entries(tool.cost).map(([res, amount]) => (
-                                                        <span
-                                                            key={res}
-                                                            className={`ml-1 mb-1 inline-block px-1.5 py-0.5 rounded font-bold ${inventory[res] >= (amount as number) ? 'bg-stone-200 dark:bg-stone-900 text-stone-700 dark:text-stone-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-500'}`}
-                                                        >
-                                                            {amount as number} {res}
-                                                        </span>
-                                                    ))}
+                                            <button
+                                                key={tool.id}
+                                                onClick={() => startToolCraft(toolCategory, actualTierIndex)}
+                                                className="w-full mt-2 text-left bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-3 rounded-xl hover:border-emerald-500 transition-colors flex gap-3 group shadow-sm"
+                                            >
+                                                <div className="relative w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-2xl border border-stone-200 group-hover:scale-105 transition-transform p-1">
+                                                    <img src={tool.icon} alt={tool.name} className="w-full h-full object-contain drop-shadow-sm" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                                                    {index > 0 && <span className="absolute -top-2 -right-4 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">+ Avançado</span>}
                                                 </div>
-                                            </div>
-                                        </button>
+                                                <div className="flex-1 px-1">
+                                                    <h4 className="font-bold text-stone-800 dark:text-stone-200 pr-4">
+                                                        {tool.name}
+                                                    </h4>
+                                                    <div className="mt-2 text-xs text-stone-500">
+                                                        Custo:
+                                                        {Object.entries(tool.cost).map(([res, amount]) => (
+                                                            <span
+                                                                key={res}
+                                                                className={`ml-1 mb-1 inline-block px-1.5 py-0.5 rounded font-bold ${isDebugMode || inventory[res] >= (amount as number) ? 'bg-stone-200 dark:bg-stone-900 text-stone-700 dark:text-stone-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-500'}`}
+                                                            >
+                                                                {amount as number} {res}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </button>
                                         );
                                     });
                                 })}
