@@ -64,7 +64,7 @@ export default function PetsPanel({
                                     className={`w-full text-left bg-white dark:bg-stone-800 border p-3 rounded-xl transition-colors shadow-sm ${isEquipped ? 'border-amber-500' : 'border-stone-200 dark:border-stone-700'}`}
                                 >
                                     <div className="flex gap-3 items-center">
-                                        <div className="w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-3xl border border-stone-200 flex-shrink-0 relative overflow-hidden">
+                                        <div className="w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-3xl border border-stone-200 shrink-0 relative overflow-hidden">
                                             <div className="absolute top-0 right-0 bg-stone-800 text-white text-[9px] px-1 font-bold rounded-bl">
                                                 {petInfo.category.charAt(0)}
                                             </div>

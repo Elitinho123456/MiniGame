@@ -337,6 +337,9 @@ export default function Game() {
     const now = Date.now();
     const hasSpeedPotion = activePotions['pot_speed'] && activePotions['pot_speed'] > now;
     const hasLootPotion = activePotions['pot_loot'] && activePotions['pot_loot'] > now;
+    const hasDurabilityPotion = activePotions['pot_durability'] && activePotions['pot_durability'] > now;
+    const hasXpPotion = activePotions['pot_xp'] && activePotions['pot_xp'] > now;
+    const hasMagnetPotion = activePotions['pot_magnet'] && activePotions['pot_magnet'] > now;
 
     const blockProps = blockProperties[currentBlock];
     const hardness = blockProps ? blockProps.hardness : 10;
@@ -402,7 +405,7 @@ export default function Game() {
     const newProgress = miningProgress + toolSpeed + petSpeedBonus;
     if (newProgress >= hardness) {
       // Bloco quebrado! Agora aplicamos o dano na ferramenta.
-      if (reqTool !== 'none' && toolsLevel[reqTool] > 0) {
+      if (reqTool !== 'none' && toolsLevel[reqTool] > 0 && !hasDurabilityPotion) {
         const newDurability = toolDurabilities[reqTool] - 1;
         setToolDurabilities((prev) => ({ ...prev, [reqTool]: newDurability }));
 
@@ -425,6 +428,10 @@ export default function Game() {
 
       if (hasLootPotion) {
         dropAmount *= 2; // Dobra todo o loot incluindo bonus de pets/fortuna
+      }
+
+      if (hasMagnetPotion) {
+        dropAmount += 1; // +1 drop extra por bloco minerado
       }
 
       if (drop) {
@@ -477,12 +484,13 @@ export default function Game() {
 
       // Dar XP passivo pro pet equipado
       if (equippedPet) {
+        const xpGain = hasXpPotion ? 3 : 1; // 3x XP com poção
         setOwnedPets((prev) => {
           const current = prev[equippedPet];
           if (!current) return prev;
           const petDef = availablePets.find(p => p.id === equippedPet);
           if (petDef && current.level < petDef.maxLevel) {
-            return { ...prev, [equippedPet]: { ...current, xp: current.xp + 1 } };
+            return { ...prev, [equippedPet]: { ...current, xp: current.xp + xpGain } };
           }
           return prev;
         });
@@ -579,176 +587,190 @@ export default function Game() {
     }
   }
 
+  const isFullscreenTab = activeTab === 'shop' || activeTab === 'villagers';
+
   return (
     <div className="flex h-screen bg-stone-900 text-stone-100 overflow-hidden">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <div className="flex-1 flex flex-col md:flex-row relative">
-        {/* LADO ESQUERDO: Gameplay (Visível quase sempre, mas pode sumir no mobile se abrir loja) */}
-        <div
-          className={`relative flex-1 bg-cover bg-center bg-no-repeat flex flex-col items-center justify-center p-4 min-h-[50vh] transition-all duration-700 ${activeTab !== 'mining' ? 'hidden md:flex opacity-50 pointer-events-none' : ''}`}
-          style={{ backgroundImage: `url('${currentDimData.background}')` }}
-        >
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
 
-          <div className="relative z-10 flex flex-col items-center">
-            {/* Seletor de Dimensões */}
-            <div className="mb-12 flex items-center gap-2">
-              <select
-                value={currentDim}
-                onChange={(e) => handleDimensionChange(e.target.value)}
-                className="px-6 py-3 bg-stone-900/80 border border-stone-600 backdrop-blur-md rounded-full shadow-lg text-xl md:text-2xl font-black text-stone-200 tracking-widest uppercase cursor-pointer outline-none hover:bg-stone-800 transition-colors"
-                disabled={activeTab !== 'mining'}
-              >
-                {Object.keys(dimensions).map((dimKey) => (
-                  <option key={dimKey} value={dimKey}>
-                    {dimensions[dimKey].name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              onClick={handleMineBlock}
-              className={`group relative cursor-pointer transform ${videoQuality !== 'Baixa' ? 'transition-all duration-100 hover:scale-110 active:scale-95 active:rotate-3' : ''}`}
-              disabled={activeTab !== 'mining'}
-            >
-              {videoQuality !== 'Baixa' && <div className="absolute inset-0 bg-white/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>}
-              <img
-                src={`/${currentBlock}.webp`}
-                alt={currentBlock}
-                className={`w-48 h-48 md:w-64 md:h-64 object-contain ${videoQuality === 'Alta' ? 'drop-shadow-[0_10px_15px_rgba(0,0,0,0.6)]' : ''}`}
-                draggable={false}
-              />
-            </button>
-
-            {warningMessage && (
-              <div className="absolute top-0 text-red-500 font-bold bg-black/50 px-4 py-2 rounded-full transform -translate-y-full">
-                {warningMessage}
-              </div>
-            )}
-
-            <div className={`w-48 md:w-64 h-6 bg-stone-900/80 rounded-full border border-stone-600 mt-6 overflow-hidden relative ${videoQuality === 'Alta' ? 'shadow-inner' : ''}`}>
-              <div
-                className={`h-full bg-emerald-500 ${videoQuality !== 'Baixa' ? 'transition-all duration-150' : ''}`}
-                style={{
-                  width: `${Math.min(100, (miningProgress / (blockProperties[currentBlock]?.hardness || 10)) * 100)}%`,
-                }}
-              />
-              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-stone-200 drop-shadow-md">
-                {Math.floor(miningProgress)} /{' '}
-                {blockProperties[currentBlock]?.hardness || 10}
-              </span>
-            </div>
-
-            <p className="mt-4 font-bold text-stone-300 text-2xl md:text-3xl capitalize drop-shadow-lg">
-              {blockName}
-            </p>
-          </div>
-        </div>
-
-        {/* LADO DIREITO: Gerenciamento (Tabs) */}
-        <div className={`w-full md:w-100 lg:w-125 bg-stone-100 dark:bg-stone-950 flex flex-col h-screen overflow-y-auto custom-scrollbar border-l border-stone-800 ${activeTab !== 'mining' && activeTab !== 'shop' && activeTab !== 'pets' && activeTab !== 'settings' && activeTab !== 'villagers' ? 'hidden' : ''}`}>
-
-          {(activeTab === 'mining' || activeTab === 'shop' || activeTab === 'pets') && (
-            <EquipmentHeader
-              toolsLevel={toolsLevel}
-              toolDurabilities={toolDurabilities}
-            />
-          )}
-
-          {(activeTab === 'mining') && (
-            <>
-              <InventoryPanel
-                inventory={inventory}
-                currentCapacity={currentCapacity}
-                maxCapacity={maxCapacity}
-              />
-              <UpgradesPanel
-                activeUpgrades={activeUpgrades}
-                buyUpgrade={buyUpgrade}
-                mineCoins={mineCoins}
-              />
-              <CraftingPanel
-                toolsLevel={toolsLevel}
-                activeCraft={activeCraft}
-                inventory={inventory}
-                setInventory={setInventory}
-                ownedStations={ownedStations}
-                setActiveCraft={setActiveCraft}
-                activeUpgrades={activeUpgrades}
-              />
-              <FurnacePanel
-                inventory={inventory}
-                setInventory={setInventory}
-                ownedStations={ownedStations}
-                furnaceState={furnaceState}
-                setFurnaceState={setFurnaceState}
-              />
-            </>
-          )}
-
-          {activeTab === 'shop' && (
+        {/* ═══ FULLSCREEN PANELS (Shop / Villagers) ═══ */}
+        {activeTab === 'shop' && (
+          <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
             <ShopPanel
               inventory={inventory}
               setInventory={setInventory}
               mineCoins={mineCoins}
               setMineCoins={setMineCoins}
-              onBuyPotion={(potionId, cost) => {
+              activePotions={activePotions}
+              onBuyPotion={(potionId, cost, durationMs) => {
                 if (mineCoins >= cost) {
                   setMineCoins(prev => prev - cost);
                   setActivePotions(prev => ({
                     ...prev,
-                    [potionId]: Date.now() + 10 * 60 * 1000 // +10 minutos
+                    [potionId]: Date.now() + durationMs
                   }));
-                  alert('Poção comprada e ativada por 10 minutos!');
                 }
               }}
             />
-          )}
+          </div>
+        )}
 
-          {activeTab === 'pets' && (
-            <PetsPanel
-              ownedPets={ownedPets}
-              equippedPet={equippedPet}
-              setEquippedPet={setEquippedPet}
-              upgradePet={upgradePet}
-              mineCoins={mineCoins}
-            />
-          )}
-
-          {/* 4. Render VillagersPanel in the correct tab */}
-          {activeTab === 'villagers' && (
-            activeUpgrades.includes('upg_villagers_unlock') ? (
+        {activeTab === 'villagers' && (
+          <div className="flex-1 flex flex-col h-screen overflow-hidden">
+            {activeUpgrades.includes('upg_villagers_unlock') ? (
               <VillagersPanel
                 ownedVillagers={ownedVillagers}
                 hireVillager={hireVillager}
                 mineCoins={mineCoins}
               />
             ) : (
-              <div className="p-8 h-full flex items-center justify-center flex-col text-center">
-                <div className="text-6xl mb-4 opacity-50">🔒</div>
-                <h2 className="text-2xl font-black text-stone-500 mb-2">Sistema Bloqueado</h2>
-                <p className="text-stone-600 font-bold max-w-xs">
+              <div className="flex-1 bg-linear-to-b from-[#1a1025] via-[#0d1b2a] to-[#0a0f1a] flex items-center justify-center flex-col text-center">
+                <div className="text-8xl mb-6 opacity-40">🔒</div>
+                <h2 className="text-3xl font-black text-stone-400 mb-3">Sistema Bloqueado</h2>
+                <p className="text-stone-600 font-bold max-w-sm text-sm leading-relaxed">
                   Compre o upgrade "Taverna Local" na aba de Upgrades para liberar os Aldeões.
                 </p>
               </div>
-            )
-          )}
+            )}
+          </div>
+        )}
 
-          {activeTab === 'settings' && (
-            <SettingsPanel 
-                setVideoQuality={setVideoQuality} 
-                videoQuality={videoQuality} 
-                audioVolume={audioVolume}
-                setAudioVolume={setAudioVolume}
-                isMuted={isMuted}
-                setIsMuted={setIsMuted}
-            />
-          )}
+        {/* ═══ MINING + RIGHT PANEL (only visible when NOT fullscreen tab) ═══ */}
+        {!isFullscreenTab && (
+          <>
+            {/* LADO ESQUERDO: Gameplay */}
+            <div
+              className={`relative flex-1 bg-cover bg-center bg-no-repeat flex flex-col items-center justify-center p-4 min-h-[50vh] transition-all duration-700 ${activeTab !== 'mining' ? 'hidden md:flex opacity-50 pointer-events-none' : ''}`}
+              style={{ backgroundImage: `url('${currentDimData.background}')` }}
+            >
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
 
-        </div>
+              <div className="relative z-10 flex flex-col items-center">
+                {/* Seletor de Dimensões */}
+                <div className="mb-12 flex items-center gap-2">
+                  <select
+                    value={currentDim}
+                    onChange={(e) => handleDimensionChange(e.target.value)}
+                    className="px-6 py-3 bg-stone-900/80 border border-stone-600 backdrop-blur-md rounded-full shadow-lg text-xl md:text-2xl font-black text-stone-200 tracking-widest uppercase cursor-pointer outline-none hover:bg-stone-800 transition-colors"
+                    disabled={activeTab !== 'mining'}
+                  >
+                    {Object.keys(dimensions).map((dimKey) => (
+                      <option key={dimKey} value={dimKey}>
+                        {dimensions[dimKey].name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  onClick={handleMineBlock}
+                  className={`group relative cursor-pointer transform ${videoQuality !== 'Baixa' ? 'transition-all duration-100 hover:scale-110 active:scale-95 active:rotate-3' : ''}`}
+                  disabled={activeTab !== 'mining'}
+                >
+                  {videoQuality !== 'Baixa' && <div className="absolute inset-0 bg-white/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>}
+                  <img
+                    src={`/${currentBlock}.webp`}
+                    alt={currentBlock}
+                    className={`w-48 h-48 md:w-64 md:h-64 object-contain ${videoQuality === 'Alta' ? 'drop-shadow-[0_10px_15px_rgba(0,0,0,0.6)]' : ''}`}
+                    draggable={false}
+                  />
+                </button>
+
+                {warningMessage && (
+                  <div className="absolute top-0 text-red-500 font-bold bg-black/50 px-4 py-2 rounded-full transform -translate-y-full">
+                    {warningMessage}
+                  </div>
+                )}
+
+                <div className={`w-48 md:w-64 h-6 bg-stone-900/80 rounded-full border border-stone-600 mt-6 overflow-hidden relative ${videoQuality === 'Alta' ? 'shadow-inner' : ''}`}>
+                  <div
+                    className={`h-full bg-emerald-500 ${videoQuality !== 'Baixa' ? 'transition-all duration-150' : ''}`}
+                    style={{
+                      width: `${Math.min(100, (miningProgress / (blockProperties[currentBlock]?.hardness || 10)) * 100)}%`,
+                    }}
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-stone-200 drop-shadow-md">
+                    {Math.floor(miningProgress)} /{' '}
+                    {blockProperties[currentBlock]?.hardness || 10}
+                  </span>
+                </div>
+
+                <p className="mt-4 font-bold text-stone-300 text-2xl md:text-3xl capitalize drop-shadow-lg">
+                  {blockName}
+                </p>
+              </div>
+            </div>
+
+            {/* LADO DIREITO: Gerenciamento (Tabs) */}
+            <div className={`w-full md:w-100 lg:w-125 bg-stone-100 dark:bg-stone-950 flex flex-col h-screen overflow-y-auto custom-scrollbar border-l border-stone-800 ${activeTab !== 'mining' && activeTab !== 'pets' && activeTab !== 'settings' ? 'hidden' : ''}`}>
+
+              {(activeTab === 'mining' || activeTab === 'pets') && (
+                <EquipmentHeader
+                  toolsLevel={toolsLevel}
+                  toolDurabilities={toolDurabilities}
+                />
+              )}
+
+              {(activeTab === 'mining') && (
+                <>
+                  <InventoryPanel
+                    inventory={inventory}
+                    currentCapacity={currentCapacity}
+                    maxCapacity={maxCapacity}
+                  />
+                  <UpgradesPanel
+                    activeUpgrades={activeUpgrades}
+                    buyUpgrade={buyUpgrade}
+                    mineCoins={mineCoins}
+                  />
+                  <CraftingPanel
+                    toolsLevel={toolsLevel}
+                    activeCraft={activeCraft}
+                    inventory={inventory}
+                    setInventory={setInventory}
+                    ownedStations={ownedStations}
+                    setActiveCraft={setActiveCraft}
+                    activeUpgrades={activeUpgrades}
+                  />
+                  <FurnacePanel
+                    inventory={inventory}
+                    setInventory={setInventory}
+                    ownedStations={ownedStations}
+                    furnaceState={furnaceState}
+                    setFurnaceState={setFurnaceState}
+                  />
+                </>
+              )}
+
+              {activeTab === 'pets' && (
+                <PetsPanel
+                  ownedPets={ownedPets}
+                  equippedPet={equippedPet}
+                  setEquippedPet={setEquippedPet}
+                  upgradePet={upgradePet}
+                  mineCoins={mineCoins}
+                />
+              )}
+
+              {activeTab === 'settings' && (
+                <SettingsPanel 
+                    setVideoQuality={setVideoQuality} 
+                    videoQuality={videoQuality} 
+                    audioVolume={audioVolume}
+                    setAudioVolume={setAudioVolume}
+                    isMuted={isMuted}
+                    setIsMuted={setIsMuted}
+                />
+              )}
+
+            </div>
+          </>
+        )}
+
       </div>
     </div>
   );
 }
+
