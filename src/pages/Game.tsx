@@ -11,17 +11,26 @@ import {
   UPGRADE_STORAGE_BONUS,
   itemPrices,
 } from '../assets/consts';
+import { randomEvents, rollChestDrop, rollChestRewards } from '../assets/events';
+import { allAccessories } from '../assets/accessories';
+import { useEventSystem } from '../hooks/useEventSystem';
+import { useAccessorySystem } from '../hooks/useAccessorySystem';
+import { useChestSystem } from '../hooks/useChestSystem';
 
-import EquipmentHeader from '../components/EquipmentHeader';
+import EquipmentHeader from '../components/ui/EquipmentHeader';
 import InventoryPanel from '../components/InventoryPanel';
 import UpgradesPanel from '../components/UpgradesPanel';
 import CraftingPanel, { type CraftingTask } from '../components/CraftingPanel';
 import FurnacePanel, { type SmeltingState } from '../components/FurnacePanel';
 import PetsPanel from '../components/PetsPanel';
 import ShopPanel from '../components/ShopPanel';
-import Sidebar, { type ActiveTab } from '../components/Sidebar';
+import Sidebar, { type ActiveTab } from '../components/ui/Sidebar';
 import SettingsPanel from '../components/SettingsPanel';
 import VillagersPanel from '../components/VillagersPanel';
+import DimensionSelector from '../components/ui/DimensionSelector';
+import EventBanner from '../components/ui/EventBanner';
+import ChestModal from '../components/ChestModal';
+import AccessoriesPanel from '../components/AccessoriesPanel';
 
 export default function Game() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('mining');
@@ -125,6 +134,26 @@ export default function Game() {
 
   // Debug
   const [isDebugMode, setIsDebugMode] = useState<boolean>(false);
+
+  // ═══ HOOKS DE SISTEMAS ═══
+  const { activeEvent, setActiveEvent, eventEndTime, setEventEndTime } = useEventSystem(setInventory);
+  
+  const {
+    ownedAccessories,
+    setOwnedAccessories,
+    equippedAccessories,
+    equipAccessory,
+    unequipAccessory,
+    getEquippedEffect,
+  } = useAccessorySystem();
+
+  const {
+    pendingChest,
+    setPendingChest,
+    chestRewards,
+    setChestRewards,
+    handleCloseChest,
+  } = useChestSystem(setInventory, setMineCoins, setOwnedAccessories);
 
   useEffect(() => {
     const idleInterval = setInterval(() => {
@@ -236,7 +265,9 @@ export default function Game() {
   const upgradeCapacityBonus = activeUpgrades.includes('upg_storage_1')
     ? UPGRADE_STORAGE_BONUS
     : 0;
-  const maxCapacity = BASE_INVENTORY_CAPACITY + storageCapacityBonus + upgradeCapacityBonus;
+  const shulkerAmulet = getEquippedEffect('double_capacity');
+  const accessoryCapacityMult = shulkerAmulet ? (shulkerAmulet.effectParams.multiplier || 2) : 1;
+  const maxCapacity = Math.floor((BASE_INVENTORY_CAPACITY + storageCapacityBonus + upgradeCapacityBonus) * accessoryCapacityMult);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -432,7 +463,7 @@ export default function Game() {
       }
     }
 
-    const newProgress = miningProgress + toolSpeed + petSpeedBonus;
+    const newProgress = miningProgress + (toolSpeed + petSpeedBonus) * eventMiningSpeedMult;
     if (newProgress >= hardness) {
       // Bloco quebrado! Agora aplicamos o dano na ferramenta.
       if (reqTool !== 'none' && toolsLevel[reqTool] > 0 && !hasDurabilityPotion) {
@@ -457,11 +488,26 @@ export default function Game() {
       }
 
       if (hasLootPotion) {
-        dropAmount *= 2; // Dobra todo o loot incluindo bonus de pets/fortuna
+        dropAmount *= 2;
       }
 
       if (hasMagnetPotion) {
-        dropAmount += 1; // +1 drop extra por bloco minerado
+        dropAmount += 1;
+      }
+
+      // Event: double drops
+      dropAmount = Math.floor(dropAmount * eventDropMult);
+
+      // Fortune Glove: 20% 2x, 5% 3x, 1% 4x
+      if (fortuneGlove) {
+        const roll = Math.random();
+        if (roll < (fortuneGlove.effectParams.quad || 0.01)) {
+          dropAmount *= 4;
+        } else if (roll < (fortuneGlove.effectParams.triple || 0.05)) {
+          dropAmount *= 3;
+        } else if (roll < (fortuneGlove.effectParams.double || 0.20)) {
+          dropAmount *= 2;
+        }
       }
 
       if (drop) {
@@ -495,10 +541,11 @@ export default function Game() {
         }
       }
 
-      // Check for Pet Drops (Random Roll 0-100)
+      // Check for Pet Drops (Random Roll 0-100) — event + luck boost
       const petRoll = Math.random() * 100;
       for (const pet of availablePets) {
-        if (petRoll < pet.dropChance) {
+        const adjustedChance = pet.dropChance * eventPetChanceMult * (1 + luckBonus);
+        if (petRoll < adjustedChance) {
           alert(`CARAMBA! VOCÊ ACHOU UM PET: ${pet.name} (${pet.category})!`);
           setOwnedPets((prev) => {
             const current = prev[pet.id];
@@ -508,8 +555,16 @@ export default function Game() {
               return { ...prev, [pet.id]: { level: 1, xp: 0 } };
             }
           });
-          break; // Max 1 per hit
+          break;
         }
+      }
+
+      // Check for Chest Drops
+      const chestDrop = rollChestDrop(toolsLevel.pickaxe || 0);
+      if (chestDrop) {
+        const rewards = rollChestRewards(chestDrop);
+        setPendingChest(chestDrop);
+        setChestRewards(rewards);
       }
 
       // Dar XP passivo pro pet equipado
@@ -617,7 +672,23 @@ export default function Game() {
     }
   }
 
-  const isFullscreenTab = activeTab === 'shop' || activeTab === 'villagers';
+  // Handlers and effects for events, accessories, and chests have been extracted to their respective hooks.
+
+  // ═══ COMPUTE ACCESSORY MODIFIERS ═══
+  // Fortune glove
+  const fortuneGlove = getEquippedEffect('fortune_roll');
+
+  // Luck boost (Rabbit Amulet)
+  const luckAcc = getEquippedEffect('luck_boost');
+  const luckBonus = luckAcc ? (luckAcc.effectParams.bonus || 0) : 0;
+
+  // Event modifiers
+  const isEventActive = activeEvent && Date.now() < eventEndTime;
+  const eventMiningSpeedMult = (isEventActive && activeEvent?.modifier === 'mining_speed') ? activeEvent.modifierValue : 1;
+  const eventDropMult = (isEventActive && activeEvent?.modifier === 'drop_amount') ? activeEvent.modifierValue : 1;
+  const eventPetChanceMult = (isEventActive && activeEvent?.modifier === 'pet_drop_chance') ? activeEvent.modifierValue : 1;
+
+  const isFullscreenTab = activeTab === 'shop' || activeTab === 'villagers' || activeTab === 'accessories';
 
   return (
     <div className="flex h-screen bg-stone-900 text-stone-100 overflow-hidden">
@@ -669,6 +740,18 @@ export default function Game() {
           </div>
         )}
 
+        {/* ═══ ACCESSORIES (Fullscreen) ═══ */}
+        {activeTab === 'accessories' && (
+          <div className="flex-1 flex flex-col h-screen overflow-hidden">
+            <AccessoriesPanel
+              ownedAccessories={ownedAccessories}
+              equippedAccessories={equippedAccessories}
+              onEquip={equipAccessory}
+              onUnequip={unequipAccessory}
+            />
+          </div>
+        )}
+
         {/* ═══ MINING + RIGHT PANEL (only visible when NOT fullscreen tab) ═══ */}
         {!isFullscreenTab && (
           <>
@@ -679,22 +762,17 @@ export default function Game() {
             >
               <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
 
+              {/* Event Banner */}
+              <EventBanner activeEvent={activeEvent} eventEndTime={eventEndTime} />
+
               <div className="relative z-10 flex flex-col items-center">
                 {/* Seletor de Dimensões */}
-                <div className="mb-12 flex items-center gap-2">
-                  <select
-                    value={currentDim}
-                    onChange={(e) => handleDimensionChange(e.target.value)}
-                    className="px-6 py-3 bg-stone-900/80 border border-stone-600 backdrop-blur-md rounded-full shadow-lg text-xl md:text-2xl font-black text-stone-200 tracking-widest uppercase cursor-pointer outline-none hover:bg-stone-800 transition-colors"
-                    disabled={activeTab !== 'mining'}
-                  >
-                    {Object.keys(dimensions).map((dimKey) => (
-                      <option key={dimKey} value={dimKey}>
-                        {dimensions[dimKey].name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <DimensionSelector
+                  currentDim={currentDim}
+                  dimensions={dimensions}
+                  onChange={handleDimensionChange}
+                  disabled={activeTab !== 'mining'}
+                />
 
                 <button
                   onClick={handleMineBlock}
@@ -819,6 +897,28 @@ export default function Game() {
                     });
                     alert('Todos os pets desbloqueados!');
                   }}
+                  onCheatTriggerEvent={() => {
+                    const evt = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+                    setActiveEvent(evt);
+                    setEventEndTime(Date.now() + evt.durationMs);
+                  }}
+                  onCheatUnlockAccessories={() => {
+                    setOwnedAccessories(prev => {
+                      const newAcc = { ...prev };
+                      allAccessories.forEach(acc => { newAcc[acc.id] = true; });
+                      return newAcc;
+                    });
+                    alert('Todos os acessórios desbloqueados!');
+                  }}
+                />
+              )}
+
+              {/* Chest Modal */}
+              {pendingChest && (
+                <ChestModal
+                  chest={pendingChest}
+                  rewards={chestRewards}
+                  onClose={handleCloseChest}
                 />
               )}
 

@@ -1,4 +1,4 @@
-import { toolChains } from '../assets/consts';
+import { toolChains } from '../../assets/consts';
 
 interface EquipmentHeaderProps {
     toolsLevel: Record<string, number>;
@@ -12,7 +12,7 @@ export default function EquipmentHeader({
     const renderTool = (key: 'pickaxe' | 'shovel' | 'axe' | 'hoe', label: string, toolLessIcon: string) => {
         const level = toolsLevel[key] || 0;
         const durability = toolDurabilities[key] || 0;
-        
+
         const hasTool = level > 0;
         const toolData = hasTool ? toolChains[key][level - 1] : null;
 
@@ -22,7 +22,7 @@ export default function EquipmentHeader({
         if (hasTool && toolData) {
             const maxDurability = toolData.maxDurability;
             progress = (durability / maxDurability) * 100;
-            
+
             if (progress > 66) colorClass = 'bg-emerald-500';
             else if (progress > 33) colorClass = 'bg-yellow-500';
             else colorClass = 'bg-red-500';
@@ -45,9 +45,9 @@ export default function EquipmentHeader({
                 </div>
                 {hasTool && toolData ? (
                     <div className="w-12 mt-2 h-1.5 bg-stone-300 dark:bg-stone-900 rounded-full overflow-hidden shadow-inner">
-                        <div 
-                            className={`h-full ${colorClass} transition-all duration-300`} 
-                            style={{ width: `${Math.max(0, Math.min(100, progress))}%` }} 
+                        <div
+                            className={`h-full ${colorClass} transition-all duration-300`}
+                            style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
                         />
                     </div>
                 ) : (

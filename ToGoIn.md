@@ -10,7 +10,6 @@
 - [ ] Adicionar galeria de pets
 - [ ] Adicionar galeria de upgrades
 - [ ] Adicionar galeria de ferramentas
-- [ ] Adicionar galeria a loja
 - [ ] Adicionar galeria de dimensões
 
 ## Sistemas

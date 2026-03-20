@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
 import { Pickaxe, Sparkles, ChevronRight, Play, Github } from 'lucide-react';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/ui/Sidebar';
 
 export default function Home() {
   return (
@@ -55,7 +55,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-black uppercase tracking-widest mb-8"
             >
               <Sparkles size={12} />
-              Alpha 0.0.5 Já Disponível
+              Alpha 0.0.6 Já Disponível
             </motion.div>
 
             <h1 className="text-5xl md:text-8xl font-black text-white mb-6 tracking-tighter leading-none">

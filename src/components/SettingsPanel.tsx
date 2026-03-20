@@ -12,9 +12,11 @@ interface SettingsPanelProps {
     onCheatAddCoins?: (amount: number) => void;
     onCheatAddResources?: () => void;
     onCheatUnlockPets?: () => void;
+    onCheatTriggerEvent?: () => void;
+    onCheatUnlockAccessories?: () => void;
 }
 
-export default function SettingsPanel({ videoQuality, setVideoQuality, audioVolume, setAudioVolume, isMuted, setIsMuted, isDebugMode, setIsDebugMode, onCheatAddCoins, onCheatAddResources, onCheatUnlockPets }: SettingsPanelProps) {
+export default function SettingsPanel({ videoQuality, setVideoQuality, audioVolume, setAudioVolume, isMuted, setIsMuted, isDebugMode, setIsDebugMode, onCheatAddCoins, onCheatAddResources, onCheatUnlockPets, onCheatTriggerEvent, onCheatUnlockAccessories }: SettingsPanelProps) {
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
@@ -122,6 +124,12 @@ export default function SettingsPanel({ videoQuality, setVideoQuality, audioVolu
                                 </button>
                                 <button onClick={() => onCheatUnlockPets?.()} className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded">
                                     Desbloquear Todos os Pets
+                                </button>
+                                <button onClick={() => onCheatTriggerEvent?.()} className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded">
+                                    ⚡ Forçar Evento Aleatório
+                                </button>
+                                <button onClick={() => onCheatUnlockAccessories?.()} className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-2 px-4 rounded">
+                                    💍 Desbloquear Todos Acessórios
                                 </button>
                             </div>
                         </div>
