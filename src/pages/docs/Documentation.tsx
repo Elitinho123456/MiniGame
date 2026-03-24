@@ -51,7 +51,7 @@ export default function Documentation() {
 
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 p-6 md:p-10">
         {/* Sidebar Mini */}
-        <aside className="md:w-64 flex-shrink-0">
+        <aside className="md:w-64 shrink-0">
           <nav className="sticky top-28 space-y-1">
             {menuItems.map((item) => (
               <button

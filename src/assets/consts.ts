@@ -1,3 +1,5 @@
+import { gameRegistry, type Upgrade, type Recipe } from './registry';
+
 export const BASE_INVENTORY_CAPACITY = 500;
 export const UPGRADE_STORAGE_BONUS = 100;
 
@@ -68,17 +70,17 @@ export const blockProperties: Record<
   Stone: { hardness: 20, reqTool: 'pickaxe', reqLevel: 1 },
   Coal_Ore: { hardness: 25, reqTool: 'pickaxe', reqLevel: 1 },
   Copper_Ore: { hardness: 30, reqTool: 'pickaxe', reqLevel: 1 },
-  Iron_Ore: { hardness: 35, reqTool: 'pickaxe', reqLevel: 2 },
-  Gold_Ore: { hardness: 40, reqTool: 'pickaxe', reqLevel: 3 },
-  Redstone_Ore: { hardness: 35, reqTool: 'pickaxe', reqLevel: 3 },
-  Lapis_Lazuli_Ore: { hardness: 35, reqTool: 'pickaxe', reqLevel: 3 },
-  Diamond_Ore: { hardness: 50, reqTool: 'pickaxe', reqLevel: 3 },
-  Emerald_Ore: { hardness: 60, reqTool: 'pickaxe', reqLevel: 3 },
+  Iron_Ore: { hardness: 175, reqTool: 'pickaxe', reqLevel: 2 },
+  Gold_Ore: { hardness: 200, reqTool: 'pickaxe', reqLevel: 3 },
+  Redstone_Ore: { hardness: 175, reqTool: 'pickaxe', reqLevel: 3 },
+  Lapis_Lazuli_Ore: { hardness: 175, reqTool: 'pickaxe', reqLevel: 3 },
+  Diamond_Ore: { hardness: 250, reqTool: 'pickaxe', reqLevel: 3 },
+  Emerald_Ore: { hardness: 300, reqTool: 'pickaxe', reqLevel: 3 },
   Netherrack: { hardness: 15, reqTool: 'pickaxe', reqLevel: 3 },
-  Nether_Gold_Ore: { hardness: 20, reqTool: 'pickaxe', reqLevel: 3 },
-  Nether_Quartz_Ore: { hardness: 25, reqTool: 'pickaxe', reqLevel: 3 },
-  Ancient_Debris: { hardness: 100, reqTool: 'pickaxe', reqLevel: 5 },
-  End_Stone: { hardness: 80, reqTool: 'pickaxe', reqLevel: 5 },
+  Nether_Gold_Ore: { hardness: 100, reqTool: 'pickaxe', reqLevel: 3 },
+  Nether_Quartz_Ore: { hardness: 125, reqTool: 'pickaxe', reqLevel: 3 },
+  Ancient_Debris: { hardness: 2000, reqTool: 'pickaxe', reqLevel: 5 },
+  End_Stone: { hardness: 400, reqTool: 'pickaxe', reqLevel: 5 },
 };
 
 // 3. Mapeamento de Drops
@@ -154,7 +156,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'pick_wood',
       name: 'Picareta de Madeira',
-      cost: { 'Oak Planks': 3, Stick: 2 },
+      cost: { 'Oak Planks': 6, Stick: 4 },
       icon: './Wooden_Pickaxe.webp',
       speed: 2,
       maxDurability: 639,
@@ -163,7 +165,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'pick_stone',
       name: 'Picareta de Pedra',
-      cost: { Cobblestone: 3, Stick: 2 },
+      cost: { Cobblestone: 15, Stick: 10 },
       icon: './Stone_Pickaxe.webp',
       speed: 4,
       maxDurability: 1406,
@@ -172,7 +174,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'pick_copper',
       name: 'Picareta de Cobre',
-      cost: { 'Copper Ingot': 3, Stick: 2 },
+      cost: { 'Copper Ingot': 30, Stick: 20 },
       icon: './Copper_Pickaxe.webp',
       speed: 6,
       maxDurability: 3093,
@@ -181,7 +183,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'pick_iron',
       name: 'Picareta de Ferro',
-      cost: { 'Iron Ingot': 3, Stick: 2 },
+      cost: { 'Iron Ingot': 75, Stick: 50 },
       icon: './Iron_Pickaxe.webp',
       speed: 8,
       maxDurability: 6804,
@@ -190,7 +192,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'pick_gold',
       name: 'Picareta de Ouro',
-      cost: { 'Gold Ingot': 3, Stick: 2 },
+      cost: { 'Gold Ingot': 150, Stick: 100 },
       icon: './Golden_Pickaxe.webp',
       speed: 10,
       maxDurability: 14969,
@@ -199,7 +201,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'pick_diamond',
       name: 'Picareta de Diamante',
-      cost: { Diamond: 3, Stick: 2 },
+      cost: { Diamond: 300, Stick: 200 },
       icon: './Diamond_Pickaxe.webp',
       speed: 12,
       maxDurability: 32932,
@@ -208,7 +210,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'pick_netherite',
       name: 'Picareta de Netherite',
-      cost: { 'Netherite Ingot': 3, Stick: 2 },
+      cost: { 'Netherite Ingot': 600, Stick: 400 },
       icon: './Netherite_Pickaxe.webp',
       speed: 14,
       maxDurability: 72450,
@@ -224,7 +226,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'axe_wood',
       name: 'Machado de Madeira',
-      cost: { 'Oak Planks': 3, Stick: 2 },
+      cost: { 'Oak Planks': 6, Stick: 4 },
       icon: './Wooden_Axe.webp',
       speed: 2,
       maxDurability: 639,
@@ -233,7 +235,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'axe_stone',
       name: 'Machado de Pedra',
-      cost: { Cobblestone: 3, Stick: 2 },
+      cost: { Cobblestone: 15, Stick: 10 },
       icon: './Stone_Axe.webp',
       speed: 4,
       maxDurability: 1406,
@@ -242,7 +244,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'axe_cooper',
       name: 'Machado de Cobre',
-      cost: { 'Copper Ingot': 3, Stick: 2 },
+      cost: { 'Copper Ingot': 30, Stick: 20 },
       icon: './Copper_Axe.webp',
       speed: 6,
       maxDurability: 3093,
@@ -251,7 +253,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'axe_iron',
       name: 'Machado de Ferro',
-      cost: { 'Iron Ingot': 3, Stick: 2 },
+      cost: { 'Iron Ingot': 75, Stick: 50 },
       icon: './Iron_Axe.webp',
       speed: 6,
       maxDurability: 6804,
@@ -260,7 +262,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'axe_gold',
       name: 'Machado de Ouro',
-      cost: { 'Gold Ingot': 3, Stick: 2 },
+      cost: { 'Gold Ingot': 150, Stick: 100 },
       icon: './Golden_Axe.webp',
       speed: 8,
       maxDurability: 14969,
@@ -269,7 +271,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'axe_diamond',
       name: 'Machado de Diamante',
-      cost: { Diamond: 3, Stick: 2 },
+      cost: { Diamond: 300, Stick: 200 },
       icon: './Diamond_Axe.webp',
       speed: 10,
       maxDurability: 32932,
@@ -278,7 +280,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'axe_netherite',
       name: 'Machado de Netherite',
-      cost: { 'Netherite Ingot': 3, Stick: 2 },
+      cost: { 'Netherite Ingot': 600, Stick: 400 },
       icon: './Netherite_Axe.webp',
       speed: 12,
       maxDurability: 72450,
@@ -294,7 +296,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'shov_wood',
       name: 'Pá de Madeira',
-      cost: { 'Oak Planks': 1, Stick: 2 },
+      cost: { 'Oak Planks': 2, Stick: 4 },
       icon: './Wooden_Shovel.webp',
       speed: 2,
       maxDurability: 639,
@@ -303,7 +305,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'shov_stone',
       name: 'Pá de Pedra',
-      cost: { Cobblestone: 1, Stick: 2 },
+      cost: { Cobblestone: 5, Stick: 10 },
       icon: './Stone_Shovel.webp',
       speed: 4,
       maxDurability: 1406,
@@ -312,7 +314,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'shov_cooper',
       name: 'Pá de Cobre',
-      cost: { 'Copper Ingot': 1, Stick: 2 },
+      cost: { 'Copper Ingot': 10, Stick: 20 },
       icon: './Copper_Shovel.webp',
       speed: 6,
       maxDurability: 3093,
@@ -321,7 +323,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'shov_iron',
       name: 'Pá de Ferro',
-      cost: { 'Iron Ingot': 1, Stick: 2 },
+      cost: { 'Iron Ingot': 25, Stick: 50 },
       icon: './Iron_Shovel.webp',
       speed: 6,
       maxDurability: 6804,
@@ -330,7 +332,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'shov_gold',
       name: 'Pá de Ouro',
-      cost: { 'Gold Ingot': 1, Stick: 2 },
+      cost: { 'Gold Ingot': 50, Stick: 100 },
       icon: './Golden_Shovel.webp',
       speed: 8,
       maxDurability: 14969,
@@ -339,7 +341,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'shov_diamond',
       name: 'Pá de Diamante',
-      cost: { Diamond: 1, Stick: 2 },
+      cost: { Diamond: 100, Stick: 200 },
       icon: './Diamond_Shovel.webp',
       speed: 10,
       maxDurability: 32932,
@@ -348,7 +350,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'shov_netherite',
       name: 'Pá de Netherite',
-      cost: { 'Netherite Ingot': 1, Stick: 2 },
+      cost: { 'Netherite Ingot': 200, Stick: 400 },
       icon: './Netherite_Shovel.webp',
       speed: 12,
       maxDurability: 72450,
@@ -364,7 +366,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'hoe_wood',
       name: 'Enxada de Madeira',
-      cost: { 'Oak Planks': 2, Stick: 2 },
+      cost: { 'Oak Planks': 4, Stick: 4 },
       icon: './Wooden_Hoe.webp',
       speed: 2,
       maxDurability: 639,
@@ -373,7 +375,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'hoe_stone',
       name: 'Enxada de Pedra',
-      cost: { Cobblestone: 2, Stick: 2 },
+      cost: { Cobblestone: 10, Stick: 10 },
       icon: './Stone_Hoe.webp',
       speed: 4,
       maxDurability: 1406,
@@ -382,7 +384,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'hoe_cooper',
       name: 'Enxada de Cobre',
-      cost: { 'Copper Ingot': 2, Stick: 2 },
+      cost: { 'Copper Ingot': 20, Stick: 20 },
       icon: './Copper_Hoe.webp',
       speed: 6,
       maxDurability: 3093,
@@ -391,7 +393,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'hoe_iron',
       name: 'Enxada de Ferro',
-      cost: { 'Iron Ingot': 2, Stick: 2 },
+      cost: { 'Iron Ingot': 50, Stick: 50 },
       icon: './Iron_Hoe.webp',
       speed: 6,
       maxDurability: 6804,
@@ -400,7 +402,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'hoe_gold',
       name: 'Enxada de Ouro',
-      cost: { 'Gold Ingot': 2, Stick: 2 },
+      cost: { 'Gold Ingot': 100, Stick: 100 },
       icon: './Golden_Hoe.webp',
       speed: 8,
       maxDurability: 14969,
@@ -409,7 +411,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'hoe_diamond',
       name: 'Enxada de Diamante',
-      cost: { Diamond: 2, Stick: 2 },
+      cost: { Diamond: 200, Stick: 200 },
       icon: './Diamond_Hoe.webp',
       speed: 10,
       maxDurability: 32932,
@@ -418,7 +420,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'hoe_netherite',
       name: 'Enxada de Netherite',
-      cost: { 'Netherite Ingot': 2, Stick: 2 },
+      cost: { 'Netherite Ingot': 400, Stick: 400 },
       icon: './Netherite_Hoe.webp',
       speed: 12,
       maxDurability: 72450,
@@ -435,7 +437,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'stor_backpack_1',
       name: 'Mochila Pequena',
-      cost: { 'Oak Planks': 20, Sand: 10 },
+      cost: { 'Oak Planks': 40, Sand: 20 },
       icon: './Backpack_Mini.png',
       capacityBonus: 50,
       craftTime: 10,
@@ -444,7 +446,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'stor_backpack_2',
       name: 'Mochila Média',
-      cost: { 'Oak Planks': 20, Sand: 10 },
+      cost: { 'Oak Planks': 100, Sand: 50 },
       icon: './Backpack_Medium.png',
       capacityBonus: 50,
       craftTime: 10,
@@ -452,7 +454,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'stor_backpack_3',
       name: 'Mochila Grande',
-      cost: { 'Oak Planks': 20, Sand: 10 },
+      cost: { 'Oak Planks': 200, Sand: 100 },
       icon: './Backpack_Big.png',
       capacityBonus: 50,
       craftTime: 10,
@@ -460,7 +462,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'upgrade_backpack_cooper',
       name: 'Mochila de Cobre',
-      cost: { 'Oak Planks': 20, Sand: 10 },
+      cost: { 'Oak Planks': 400, Sand: 200 },
       icon: './Backpack_Cooper.png',
       capacityBonus: 50,
       craftTime: 10,
@@ -468,7 +470,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'upgrade_backpack_iron',
       name: 'Mochila de Ferro',
-      cost: { 'Oak Planks': 20, Sand: 10 },
+      cost: { 'Oak Planks': 1000, Sand: 500 },
       icon: './Backpack_Iron.png',
       capacityBonus: 50,
       craftTime: 10,
@@ -476,7 +478,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'upgrade_backpack_gold',
       name: 'Mochila de Ouro',
-      cost: { 'Oak Planks': 20, Sand: 10 },
+      cost: { 'Oak Planks': 2000, Sand: 1000 },
       icon: './Backpack_Gold.png',
       capacityBonus: 50,
       craftTime: 10,
@@ -484,7 +486,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'upgrade_backpack_diamond',
       name: 'Mochila de Diamante',
-      cost: { 'Oak Planks': 20, Sand: 10 },
+      cost: { 'Oak Planks': 4000, Sand: 2000 },
       icon: './Backpack_Diamond.png',
       capacityBonus: 50,
       craftTime: 10,
@@ -492,7 +494,7 @@ export const toolChains: Record<string, any[]> = {
     {
       id: 'upgrade_backpack_netherite',
       name: 'Mochila de Netherite',
-      cost: { 'Oak Planks': 20, Sand: 10 },
+      cost: { 'Oak Planks': 10000, Sand: 5000 },
       icon: './Backpack_Netherite.png',
       capacityBonus: 50,
       craftTime: 10,
@@ -690,3 +692,18 @@ export const fuelItems: Record<string, number> = {
   'Oak Planks': 15,
   'Stick': 5,
 };
+
+// Initialize Registry
+Object.entries(dimensions).forEach(([k, v]) => gameRegistry.registerDimension(k, v));
+Object.entries(blockProperties).forEach(([k, v]) => gameRegistry.registerBlockProperty(k, v));
+Object.entries(dropMap).forEach(([k, v]) => gameRegistry.registerDrop(k, v));
+Object.entries(nameMap).forEach(([k, v]) => gameRegistry.registerName(k, v));
+Object.entries(toolChains).forEach(([k, v]) => gameRegistry.registerToolChain(k, v));
+availableUpgrades.forEach(u => gameRegistry.registerUpgrade(u as unknown as Upgrade));
+availablePets.forEach(p => gameRegistry.registerPet(p));
+Object.entries(itemPrices).forEach(([k, v]) => gameRegistry.registerItemPrice(k, v));
+handRecipes.forEach(r => gameRegistry.registerHandRecipe(r as unknown as Recipe));
+workbenchRecipes.forEach(r => gameRegistry.registerWorkbenchRecipe(r as unknown as Recipe));
+Object.entries(furnaceRecipes).forEach(([k, v]) => gameRegistry.registerFurnaceRecipe(k, v));
+Object.entries(blastFurnaceRecipes).forEach(([k, v]) => gameRegistry.registerBlastFurnaceRecipe(k, v));
+Object.entries(fuelItems).forEach(([k, v]) => gameRegistry.registerFuel(k, v));

@@ -12,6 +12,8 @@ interface DimensionSelectorProps {
     dimensions: Record<string, DimensionData>;
     onChange: (dimKey: string) => void;
     disabled?: boolean;
+    rebirthCount?: number;
+    pickaxeLevel?: number;
 }
 
 export default function DimensionSelector({
@@ -19,6 +21,8 @@ export default function DimensionSelector({
     dimensions,
     onChange,
     disabled = false,
+    rebirthCount = 0,
+    pickaxeLevel = 0,
 }: DimensionSelectorProps) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -79,13 +83,30 @@ export default function DimensionSelector({
                 >
                     {dimKeys.map((dimKey, i) => {
                         const isActive = dimKey === currentDim;
+                        let isLocked = false;
+                        let lockReason = '';
+                        
+                        if (dimKey === 'The End' && rebirthCount === 0) {
+                            isLocked = true;
+                            lockReason = 'Req. Rebirth';
+                        } else if (dimKey === 'Caves' && pickaxeLevel < 1) {
+                            isLocked = true;
+                            lockReason = 'Req. Picareta';
+                        } else if (dimKey === 'Nether' && pickaxeLevel < 6) {
+                            isLocked = true;
+                            lockReason = 'Req. Pic. Diamante';
+                        }
+
                         return (
                             <button
                                 key={dimKey}
                                 type="button"
+                                disabled={isLocked}
                                 onClick={() => {
-                                    onChange(dimKey);
-                                    setOpen(false);
+                                    if (!isLocked) {
+                                        onChange(dimKey);
+                                        setOpen(false);
+                                    }
                                 }}
                                 className={`
                   w-full flex items-center gap-3 px-5 py-3.5
@@ -93,17 +114,24 @@ export default function DimensionSelector({
                   transition-all duration-150
                   ${isActive
                                         ? 'bg-stone-700/50 text-stone-50'
-                                        : 'text-stone-300 hover:bg-stone-800/60 hover:text-stone-100'
+                                        : isLocked
+                                            ? 'text-stone-500 bg-stone-900/40 cursor-not-allowed opacity-60'
+                                            : 'text-stone-300 hover:bg-stone-800/60 hover:text-stone-100'
                                     }
                   ${i < dimKeys.length - 1 ? 'border-b border-stone-700/30' : ''}
-                  active:scale-[0.98]
+                  ${!isLocked ? 'active:scale-[0.98]' : ''}
                 `}
                             >
                                 <span className="text-2xl leading-none">
-                                    {dimensions[dimKey].name.split(' ')[0]}
+                                    {isLocked ? '🔒' : dimensions[dimKey].name.split(' ')[0]}
                                 </span>
                                 <span>{dimensions[dimKey].name.split(' ').slice(1).join(' ')}</span>
-                                {isActive && (
+                                {isLocked && (
+                                    <span className="ml-auto text-xs text-stone-500 uppercase tracking-widest font-black">
+                                        {lockReason}
+                                    </span>
+                                )}
+                                {isActive && !isLocked && (
                                     <span className="ml-auto w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
                                 )}
                             </button>

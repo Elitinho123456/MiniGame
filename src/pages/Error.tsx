@@ -97,7 +97,7 @@ export default function Error() {
             animate={{ scale: 1, opacity: 1 }}
             whileHover={{ scale: 1.05 }}
             className={`
-              w-48 h-48 md:w-64 md:h-64 bg-[#3d3d3d] border-b-8 border-r-8 border-[#252525] border-t-8 border-l-8 border-[#555]
+              w-48 h-48 md:w-64 md:h-64 bg-[#3d3d3d] border-b-8 border-r-8 border-[#252525] border-t-8 border-l-8
               flex flex-col items-center justify-center relative transition-colors duration-500
               ${mined ? 'bg-[#ffcc33] border-[#cc9900] shadow-[0_0_50px_rgba(255,204,51,0.4)]' : ''}
             `}

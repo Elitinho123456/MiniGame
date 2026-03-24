@@ -15,7 +15,7 @@
 ## Sistemas
 - [ ] Sistema de Combate com mobs
 - [ ] Sistema de masmorras
-- [ ] Sistema de eventos
+- [x] Sistema de eventos
 - [ ] Sistema de missões
 - [ ] Sistema de clãs
 - [ ] Sistema de Biomas
@@ -54,11 +54,7 @@ Tudo isso baseado no antigo jogo clicker Heros
 
     - Sistema de Armaduras
     - Sistema de Armas
-    - Sistema de Anéis
-    - Sistema de Amuletos
-    - Sistema de Cintos
     - Sistema de Botas
-    - Sistema de Luvas
     - Sistema de Capacetes
 
 ### Sistema de masmorras

@@ -33,6 +33,7 @@ export default function CraftingPanel({
 }: CraftingPanelProps) {
     const [isCraftingOpen, setIsCraftingOpen] = useState<boolean>(false);
     const [activeSection, setActiveSection] = useState<'manual' | 'bancada'>('manual');
+    const [selectedToolTiers, setSelectedToolTiers] = useState<Record<string, number>>({});
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -245,30 +246,52 @@ export default function CraftingPanel({
                                 <div className="w-full h-px bg-stone-300 dark:bg-stone-700 my-4" />
                                 <h3 className="font-black text-stone-400 uppercase text-xs tracking-wider px-2">Ferramentas Disponíveis</h3>
 
-                                {/* Tools Selection (Not strictly linear anymore, show the next 2 tiers based on currently equipped) */}
+                                {/* Tools Selection with Dropdown */}
                                 {Object.keys(toolChains).map((toolCategory) => {
-                                    const currentTier = toolsLevel[toolCategory] || 0;
-                                    // Make sure we have a valid chain
-                                    if (!toolChains[toolCategory]) return null;
+                                    const highestTierUnlocked = toolsLevel[toolCategory] || 0;
+                                    
+                                    // We default the select to the highest tier they can craft
+                                    // But if they haven't selected yet, we default to the next tier (highestTierUnlocked)
+                                    const selectedTier = selectedToolTiers[toolCategory] !== undefined 
+                                        ? selectedToolTiers[toolCategory] 
+                                        : Math.min(highestTierUnlocked, toolChains[toolCategory].length - 1);
 
-                                    const availableTools = toolChains[toolCategory].slice(currentTier, currentTier + 2); // Show next tier and the one after
+                                    const tool = toolChains[toolCategory][selectedTier];
+                                    if (!tool) return null;
 
-                                    return availableTools.map((tool, index) => {
-                                        const actualTierIndex = currentTier + index;
-                                        return (
-                                            <button
-                                                key={tool.id}
-                                                onClick={() => startToolCraft(toolCategory, actualTierIndex)}
-                                                className="w-full mt-2 text-left bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-3 rounded-xl hover:border-emerald-500 transition-colors flex gap-3 group shadow-sm"
-                                            >
+                                    return (
+                                        <div key={toolCategory} className="w-full mt-2 text-left bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-3 rounded-xl hover:border-emerald-500 transition-colors flex flex-col gap-2 group shadow-sm">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <h4 className="font-bold text-stone-800 dark:text-stone-200 capitalize">
+                                                    Equipamento: {toolCategory}
+                                                </h4>
+                                                <select 
+                                                    value={selectedTier}
+                                                    onChange={(e) => setSelectedToolTiers(prev => ({ ...prev, [toolCategory]: parseInt(e.target.value) }))}
+                                                    className="bg-stone-100 dark:bg-stone-900 border border-stone-300 dark:border-stone-600 rounded-md px-2 py-1 text-sm font-bold text-stone-700 dark:text-stone-300 outline-none focus:border-emerald-500"
+                                                >
+                                                    {toolChains[toolCategory].slice(0, Math.min(highestTierUnlocked + 1, toolChains[toolCategory].length)).map((t, i) => (
+                                                        <option key={t.id} value={i}>{t.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="flex gap-3">
                                                 <div className="relative w-12 h-12 bg-stone-100 dark:bg-stone-900 rounded-lg flex items-center justify-center text-2xl border border-stone-200 group-hover:scale-105 transition-transform p-1">
                                                     <img src={tool.icon} alt={tool.name} className="w-full h-full object-contain drop-shadow-sm" onError={(e) => (e.currentTarget.style.display = 'none')} />
-                                                    {index > 0 && <span className="absolute -top-2 -right-4 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">+ Avançado</span>}
                                                 </div>
                                                 <div className="flex-1 px-1">
-                                                    <h4 className="font-bold text-stone-800 dark:text-stone-200 pr-4">
-                                                        {tool.name}
-                                                    </h4>
+                                                    <div className="flex justify-between items-center pr-2">
+                                                        <h4 className="font-bold text-stone-800 dark:text-stone-200 pr-4">
+                                                            {tool.name}
+                                                        </h4>
+                                                        <button 
+                                                            onClick={() => startToolCraft(toolCategory, selectedTier)}
+                                                            className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded hover:bg-emerald-200 dark:hover:bg-emerald-800/60 transition-colors border border-emerald-300 dark:border-emerald-700"
+                                                        >
+                                                            CRIAR
+                                                        </button>
+                                                    </div>
                                                     <div className="mt-2 text-xs text-stone-500">
                                                         Custo:
                                                         {Object.entries(tool.cost).map(([res, amount]) => (
@@ -281,9 +304,9 @@ export default function CraftingPanel({
                                                         ))}
                                                     </div>
                                                 </div>
-                                            </button>
-                                        );
-                                    });
+                                            </div>
+                                        </div>
+                                    );
                                 })}
                             </>
                         )}

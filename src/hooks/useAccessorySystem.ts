@@ -1,14 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { type AccessorySlot, getAccessoryById } from '../assets/accessories';
 
 export function useAccessorySystem() {
-  const [ownedAccessories, setOwnedAccessories] = useState<Record<string, boolean>>({});
-  const [equippedAccessories, setEquippedAccessories] = useState<Record<AccessorySlot, string | null>>({
-    ring: null,
-    amulet: null,
-    belt: null,
-    glove: null,
+  const [ownedAccessories, setOwnedAccessories] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('ownedAccessories') || '{}');
+    } catch { return {}; }
   });
+
+  const [equippedAccessories, setEquippedAccessories] = useState<Record<AccessorySlot, string | null>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('equippedAccessories') || '{"ring":null,"amulet":null,"belt":null,"glove":null}');
+    } catch {
+      return { ring: null, amulet: null, belt: null, glove: null };
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ownedAccessories', JSON.stringify(ownedAccessories));
+    localStorage.setItem('equippedAccessories', JSON.stringify(equippedAccessories));
+  }, [ownedAccessories, equippedAccessories]);
 
   function equipAccessory(accessoryId: string) {
     const acc = getAccessoryById(accessoryId);

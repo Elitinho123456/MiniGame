@@ -31,6 +31,7 @@ import DimensionSelector from '../components/ui/DimensionSelector';
 import EventBanner from '../components/ui/EventBanner';
 import ChestModal from '../components/ChestModal';
 import AccessoriesPanel from '../components/AccessoriesPanel';
+import RebirthPanel from '../components/RebirthPanel';
 
 export default function Game() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('mining');
@@ -56,6 +57,10 @@ export default function Game() {
           break;
 
         case '4':
+          setActiveTab('accessories')
+          break;
+
+        case '5':
           setActiveTab('settings')
           break;
 
@@ -86,6 +91,30 @@ export default function Game() {
       audio.muted = isMuted;
     }
   }, [audioVolume, isMuted]);
+
+  // Rebirth State
+  const [rebirthCount, setRebirthCount] = useState<number>(() => {
+    return parseInt(localStorage.getItem('rebirthCount') || '0');
+  });
+  const [prestigeCurrency, setPrestigeCurrency] = useState<number>(() => {
+    return parseFloat(localStorage.getItem('prestigeCurrency') || '0');
+  });
+  const [rebirthUpgradesLevels, setRebirthUpgradesLevels] = useState<Record<string, number>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('rebirthUpgradesLevels') || '{}');
+    } catch { return {}; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('rebirthCount', rebirthCount.toString());
+    localStorage.setItem('prestigeCurrency', prestigeCurrency.toString());
+    localStorage.setItem('rebirthUpgradesLevels', JSON.stringify(rebirthUpgradesLevels));
+  }, [rebirthCount, prestigeCurrency, rebirthUpgradesLevels]);
+
+  // Global Modifiers derived from Rebirth
+  const coinMult = 1 + (rebirthUpgradesLevels['reb_coin_mult'] || 0) * 1.5;
+  const rebirthSpeedMult = 1 + (rebirthUpgradesLevels['reb_efficiency'] || 0) * 0.1;
+  const rebirthDropBonus = (rebirthUpgradesLevels['reb_drop_chance'] || 0) * 0.05;
 
   // Estado de Dimensões e Blocos
   const [currentDim, setCurrentDim] = useState<string>('Overworld');
@@ -137,7 +166,7 @@ export default function Game() {
 
   // ═══ HOOKS DE SISTEMAS ═══
   const { activeEvent, setActiveEvent, eventEndTime, setEventEndTime } = useEventSystem(setInventory);
-  
+
   const {
     ownedAccessories,
     setOwnedAccessories,
@@ -221,7 +250,7 @@ export default function Game() {
             if (newInv[item] && newInv[item] > 0) {
               const sellAmt = Math.min(newInv[item], 10);
               newInv[item] -= sellAmt;
-              setMineCoins(prev => prev + (sellAmt * (itemPrices[item] || 1)));
+              setMineCoins(prev => prev + (sellAmt * (itemPrices[item] || 1)) * coinMult);
               updated = true;
             }
           }
@@ -387,6 +416,42 @@ export default function Game() {
 
 
 
+  // Lógica de Rebirth
+  function handleRebirth() {
+    const confirmRebirth = window.confirm('Sua jornada atingiu o pico. Tem certeza que deseja Ascender? Você perderá todos seus itens, níveis de ferramentas, upgrades e moedas normais.');
+    if (!confirmRebirth) return;
+
+    let shards = 10;
+    if (toolsLevel.pickaxe >= 5) shards += 20; // Recompensa extra se tiver alto nível
+    if (toolsLevel.pickaxe >= 6) shards += 50; 
+    shards += Math.floor(mineCoins / 50000);
+    
+    // Contabiliza valor do inventário
+    const invValue = Object.entries(inventory).reduce((acc, [item, amt]) => acc + (itemPrices[item] || 0) * amt, 0);
+    shards += Math.floor(invValue / 10000);
+
+    setPrestigeCurrency(prev => prev + shards);
+    setRebirthCount(prev => prev + 1);
+
+    // Hard Reset
+    setInventory({});
+    setToolsLevel({ pickaxe: 0, shovel: 0, axe: 0, hoe: 0, storage: 0 });
+    setToolDurabilities({ pickaxe: 0, shovel: 0, axe: 0, hoe: 0 });
+    setMineCoins(0);
+    setActiveUpgrades([]);
+    setOwnedVillagers({});
+    setCurrentDim('Overworld');
+    setCurrentBlock('Grass_Block');
+    setActiveTab('mining');
+  }
+
+  function handleBuyRebirthUpgrade(upgradeId: string, cost: number) {
+    if (prestigeCurrency >= cost) {
+      setPrestigeCurrency(prev => prev - cost);
+      setRebirthUpgradesLevels(prev => ({ ...prev, [upgradeId]: (prev[upgradeId] || 0) + 1 }));
+    }
+  }
+
   // Lógica de Mineração
   function handleMineBlock() {
     if (currentCapacity >= maxCapacity) {
@@ -463,7 +528,26 @@ export default function Game() {
       }
     }
 
-    const newProgress = miningProgress + (toolSpeed + petSpeedBonus) * eventMiningSpeedMult;
+    const baseMiningSpeed = (toolSpeed + petSpeedBonus) * eventMiningSpeedMult * rebirthSpeedMult;
+    // Opcional: fazer a mineração inicial ser mais lenta mitigando o valor final se as ferramentas forem de tier 0
+    let finalMiningSpeed = (toolsLevel.pickaxe === 0 && reqTool === 'none') ? baseMiningSpeed * 0.5 : baseMiningSpeed;
+
+    // Accessory Effects triggering on-click
+    const bouncyRing = getEquippedEffect('bouncy_click');
+    if (bouncyRing && Math.random() < (bouncyRing.effectParams.chance || 0.15)) {
+      const minEx = bouncyRing.effectParams.minExtra || 1;
+      const maxEx = bouncyRing.effectParams.maxExtra || 4;
+      const extraClicks = Math.floor(Math.random() * (maxEx - minEx + 1)) + minEx;
+      finalMiningSpeed *= (1 + extraClicks);
+    }
+
+    const creeperRing = getEquippedEffect('resource_explosion');
+    if (creeperRing && Math.random() < (creeperRing.effectParams.chance || 0.01)) {
+      finalMiningSpeed *= (creeperRing.effectParams.clicks || 100);
+    }
+
+    const newProgress = miningProgress + finalMiningSpeed;
+
     if (newProgress >= hardness) {
       // Bloco quebrado! Agora aplicamos o dano na ferramenta.
       if (reqTool !== 'none' && toolsLevel[reqTool] > 0 && !hasDurabilityPotion) {
@@ -481,6 +565,10 @@ export default function Game() {
 
       let dropAmount = 1;
       if (activeUpgrades.includes('upg_mining_1')) dropAmount += 1;
+
+      // Rebirth Drop Bonus Chance (adds +1 drops based on percentage)
+      if (Math.random() < rebirthDropBonus) dropAmount += 1;
+      if (rebirthDropBonus > 1) dropAmount += Math.floor(rebirthDropBonus);
 
       if (petDropBonus > 0) {
         dropAmount += Math.floor(petDropBonus);
@@ -688,15 +776,32 @@ export default function Game() {
   const eventDropMult = (isEventActive && activeEvent?.modifier === 'drop_amount') ? activeEvent.modifierValue : 1;
   const eventPetChanceMult = (isEventActive && activeEvent?.modifier === 'pet_drop_chance') ? activeEvent.modifierValue : 1;
 
-  const isFullscreenTab = activeTab === 'shop' || activeTab === 'villagers' || activeTab === 'accessories';
+  const isFullscreenTab = activeTab === 'shop' || activeTab === 'villagers' || activeTab === 'accessories' || activeTab === 'rebirth';
+  const hasPickaxeLevel = toolsLevel.pickaxe || 0;
 
   return (
     <div className="flex h-screen bg-stone-900 text-stone-100 overflow-hidden">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} rebirthUnlocked={rebirthCount > 0 || hasPickaxeLevel >= 6 || currentDim === 'Nether'} />
 
       <div className="flex-1 flex flex-col md:flex-row relative">
 
-        {/* ═══ FULLSCREEN PANELS (Shop / Villagers) ═══ */}
+        {/* ═══ FULLSCREEN PANELS (Shop / Villagers / Rebirth) ═══ */}
+        {activeTab === 'rebirth' && (
+          <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
+            <RebirthPanel
+              prestigeCurrency={prestigeCurrency}
+              rebirthCount={rebirthCount}
+              rebirthUpgradesLevels={rebirthUpgradesLevels}
+              onBuyUpgrade={handleBuyRebirthUpgrade}
+              onRebirth={handleRebirth}
+              currentDim={currentDim}
+              toolsLevel={toolsLevel}
+              inventory={inventory}
+              mineCoins={mineCoins}
+            />
+          </div>
+        )}
+
         {activeTab === 'shop' && (
           <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
             <ShopPanel
@@ -772,6 +877,8 @@ export default function Game() {
                   dimensions={dimensions}
                   onChange={handleDimensionChange}
                   disabled={activeTab !== 'mining'}
+                  rebirthCount={rebirthCount}
+                  pickaxeLevel={hasPickaxeLevel}
                 />
 
                 <button
@@ -930,4 +1037,3 @@ export default function Game() {
     </div>
   );
 }
-

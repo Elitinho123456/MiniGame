@@ -75,6 +75,30 @@ export default function AccessoriesPanel({
             );
           })}
         </div>
+
+        {/* Global Active Effects Summary */}
+        <div className="mt-4 bg-stone-900/60 border border-stone-700/50 rounded-xl p-3 backdrop-blur-sm">
+          <h3 className="text-[10px] font-black text-stone-500 uppercase tracking-widest mb-2 border-b border-stone-800 pb-1">Bônus Passivos Ativos</h3>
+          <div className="flex flex-col gap-2">
+            {Object.values(equippedAccessories).filter(id => id).length === 0 ? (
+               <p className="text-xs text-stone-600 font-bold italic">Nenhum acessório equipado no momento.</p>
+            ) : (
+               Object.values(equippedAccessories).map(id => {
+                 if (!id) return null;
+                 const acc = allAccessories.find(a => a.id === id);
+                 if (!acc) return null;
+                 return (
+                   <div key={id} className="flex flex-col bg-stone-950/40 p-1.5 rounded-lg">
+                     <span className="text-xs font-bold text-fuchsia-300 flex items-center gap-1">
+                       <span className="text-[10px]">{acc.emoji}</span> {acc.effectName}
+                     </span>
+                     <span className="text-[10px] text-stone-400 mt-0.5">{acc.effectDescription}</span>
+                   </div>
+                 );
+               })
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Slot tabs */}

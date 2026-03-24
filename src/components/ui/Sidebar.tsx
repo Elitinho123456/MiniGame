@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Pickaxe, Store, PawPrint, Users, Settings, FileText, LogOut, User, CircleFadingPlus, Gem } from 'lucide-react';
+import { Pickaxe, Store, PawPrint, Users, Settings, FileText, LogOut, User, CircleFadingPlus, Gem, Infinity as InfinityIcon } from 'lucide-react';
 
-export type ActiveTab = 'mining' | 'shop' | 'pets' | 'villagers' | 'accessories' | 'settings';
+export type ActiveTab = 'mining' | 'shop' | 'pets' | 'villagers' | 'accessories' | 'settings' | 'rebirth';
 
 interface SidebarProps {
     activeTab?: ActiveTab;
     setActiveTab?: (tab: ActiveTab) => void;
     isLanding?: boolean;
+    rebirthUnlocked?: boolean;
 }
 
-export default function Sidebar({ activeTab, setActiveTab, isLanding = false }: SidebarProps) {
+export default function Sidebar({ activeTab, setActiveTab, isLanding = false, rebirthUnlocked = false }: SidebarProps) {
     const [isExpanded, setIsExpanded] = useState(true);
     const navigate = useNavigate();
 
@@ -22,6 +23,10 @@ export default function Sidebar({ activeTab, setActiveTab, isLanding = false }: 
         { id: 'accessories', label: 'Acessórios', icon: <Gem size={20} /> },
         { id: 'settings', label: 'Configurações', icon: <Settings size={20} /> },
     ];
+
+    if (rebirthUnlocked) {
+        tabs.splice(tabs.length - 1, 0, { id: 'rebirth', label: 'Ascensão', icon: <InfinityIcon size={20} className="text-purple-400" /> });
+    }
 
     return (
         <div
