@@ -141,8 +141,23 @@ export const nameMap: Record<string, string> = {
   Glass: 'Vidro',
   Shears: 'Tesoura',
   'Crafting Table': 'Bancada de Trabalho',
-  Furnace: 'Fornalha',
-  'Blast Furnace': 'Alto-forno'
+  'Blast Furnace': 'Alto-forno',
+  'Enchanting Table': 'Mesa de Encantamentos',
+  
+  // Sementes e Culturas
+  'Wheat Seeds': 'Sementes de Trigo',
+  'Wheat': 'Trigo',
+  'Carrot': 'Cenoura',
+  'Potato': 'Batata',
+  'Beetroot Seeds': 'Sementes de Beterraba',
+  'Beetroot': 'Beterraba',
+  'Nether Wart': 'Fungo do Nether',
+  'Chorus Fruit': 'Fruta do Coro',
+  'Golden Apple Seed': 'Semente de Maçã Dourada',
+  
+  // Fertilizante
+  'Bone Meal': 'Farinha de Osso',
+  'Magic Fertilizer': 'Adubo Mágico',
 };
 
 // 5. Cadeia de Progressão de Ferramentas (Crafting)
@@ -653,8 +668,22 @@ export const itemPrices: Record<string, number> = {
   Glass: 3,
   Shears: 30,
   'Crafting Table': 10,
-  Furnace: 20,
   'Blast Furnace': 150,
+  
+  // Sementes & Crops
+  'Wheat Seeds': 2,
+  'Wheat': 5,
+  'Carrot': 8,
+  'Potato': 8,
+  'Beetroot Seeds': 4,
+  'Beetroot': 10,
+  'Nether Wart': 30,
+  'Chorus Fruit': 50,
+  'Golden Apple Seed': 500,
+  
+  // Insumos
+  'Bone Meal': 10,
+  'Magic Fertilizer': 100,
 };
 
 // 9. Hand & Workbench Recipes 
@@ -669,6 +698,7 @@ export const workbenchRecipes = [
   { id: 'craft_blast_furnace', name: 'Alto-forno', creates: 'Blast Furnace', amount: 1, cost: { 'Iron Ingot': 5, Furnace: 1, Cobblestone: 3 }, craftTime: 5, icon: '/Blast_Furnace.webp' },
   { id: 'craft_shears', name: 'Tesoura', creates: 'Shears', amount: 1, cost: { 'Iron Ingot': 2 }, craftTime: 2, icon: '/Shears.webp' },
   { id: 'craft_netherite_ingot', name: 'Barra de Netherite', creates: 'Netherite Ingot', amount: 1, cost: { 'Netherite Scrap': 4, 'Gold Ingot': 4 }, craftTime: 5, icon: '/Netherite_Ingot.webp' },
+  { id: 'craft_enchanting_table', name: 'Mesa de Encantamentos', creates: 'Enchanting Table', amount: 1, cost: { Diamond: 2, Stone: 4, 'Oak Planks': 4 }, craftTime: 10, icon: '/Enchanting_Table.png' },
 ];
 
 export const furnaceRecipes: Record<string, { output: string; time: number; icon: string; exp: number }> = {
@@ -707,3 +737,46 @@ workbenchRecipes.forEach(r => gameRegistry.registerWorkbenchRecipe(r as unknown 
 Object.entries(furnaceRecipes).forEach(([k, v]) => gameRegistry.registerFurnaceRecipe(k, v));
 Object.entries(blastFurnaceRecipes).forEach(([k, v]) => gameRegistry.registerBlastFurnaceRecipe(k, v));
 Object.entries(fuelItems).forEach(([k, v]) => gameRegistry.registerFuel(k, v));
+
+// 10. Sistema de Encantamentos e Estatísticas de Materiais
+export const materialStats: Record<string, { damage: number, maxDurability: number, enchantability: number }> = {
+  wood: { damage: 2, maxDurability: 639, enchantability: 15 },
+  stone: { damage: 3, maxDurability: 1406, enchantability: 5 },
+  copper: { damage: 5, maxDurability: 3093, enchantability: 12 },
+  iron: { damage: 6, maxDurability: 6804, enchantability: 14 },
+  gold: { damage: 4, maxDurability: 14969, enchantability: 22 },
+  diamond: { damage: 7, maxDurability: 32932, enchantability: 10 },
+  netherite: { damage: 8, maxDurability: 72450, enchantability: 15 },
+};
+
+export const availableEnchantments = [
+  { id: 'fortune', name: 'Fortuna', maxLevel: 3, desc: 'Aumenta as chances de drops extras ao minerar.', weight: 20 },
+  { id: 'efficiency', name: 'Eficiência', maxLevel: 5, desc: 'Aumenta a velocidade de mineração.', weight: 30 },
+  { id: 'unbreaking', name: 'Inquebrável', maxLevel: 3, desc: 'Aumenta a resistência do item, reduzindo o gasto de durabilidade.', weight: 25 },
+  { id: 'silk_touch', name: 'Toque de Seda', maxLevel: 1, desc: 'Permite coletar o bloco em si, em vez dos seus drops regulares.', weight: 5 },
+  { id: 'mending', name: 'Remendo', maxLevel: 1, desc: 'Usa a XP coletada para consertar a ferramenta em vez de aumentar seu nível.', weight: 2 },
+];
+
+// 11. Farming System
+export type CropRarity = 'Comum' | 'Raro' | 'Épico' | 'Lendário';
+
+export interface CropDef {
+  id: string;
+  name: string;
+  seedId: string;
+  baseGrowthTime: number; // in seconds
+  rarity: CropRarity;
+  baseYield: number;
+  icon: string;
+}
+
+export const availableCrops: CropDef[] = [
+  { id: 'crop_wheat', name: 'Trigo', seedId: 'Wheat Seeds', baseGrowthTime: 60, rarity: 'Comum', baseYield: 1, icon: '🌾' },
+  { id: 'crop_carrot', name: 'Cenoura', seedId: 'Carrot', baseGrowthTime: 120, rarity: 'Comum', baseYield: 2, icon: '🥕' },
+  { id: 'crop_potato', name: 'Batata', seedId: 'Potato', baseGrowthTime: 120, rarity: 'Comum', baseYield: 2, icon: '🥔' },
+  { id: 'crop_beetroot', name: 'Beterraba', seedId: 'Beetroot Seeds', baseGrowthTime: 150, rarity: 'Raro', baseYield: 1, icon: '🧶' },
+  { id: 'crop_nether_wart', name: 'Fungo do Nether', seedId: 'Nether Wart', baseGrowthTime: 300, rarity: 'Épico', baseYield: 1, icon: '🍄' },
+  { id: 'crop_chorus', name: 'Fruta do Coro', seedId: 'Chorus Fruit', baseGrowthTime: 600, rarity: 'Lendário', baseYield: 1, icon: '🍇' },
+  // Semente Dimensional Customizada
+  { id: 'crop_golden_apple', name: 'Maçã Dourada', seedId: 'Golden Apple Seed', baseGrowthTime: 1800, rarity: 'Lendário', baseYield: 1, icon: '🍎' },
+];

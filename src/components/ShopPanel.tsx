@@ -109,7 +109,7 @@ export default function ShopPanel({
     activePotions,
     isDebugMode
 }: ShopPanelProps) {
-    const [activeTab, setActiveTab] = useState<'ofertas' | 'vender' | 'pocoes'>('ofertas');
+    const [activeTab, setActiveTab] = useState<'ofertas' | 'vender' | 'pocoes' | 'agricultura'>('ofertas');
     const [sellAmount, setSellAmount] = useState<Record<string, number>>({});
     const [, forceUpdate] = useState(0);
     const [purchaseFlash, setPurchaseFlash] = useState<string | null>(null);
@@ -161,6 +161,7 @@ export default function ShopPanel({
         { id: 'ofertas' as const, label: 'OFERTAS', icon: '🏷️' },
         { id: 'vender' as const, label: 'VENDER', icon: '💸' },
         { id: 'pocoes' as const, label: 'POÇÕES', icon: '🧪' },
+        { id: 'agricultura' as const, label: 'AGRICULTURA', icon: '🌱' },
     ];
 
     return (
@@ -531,6 +532,90 @@ export default function ShopPanel({
                                             </div>
 
                                             {purchaseFlash === potion.id && (
+                                                <motion.div
+                                                    initial={{ opacity: 0.8 }}
+                                                    animate={{ opacity: 0 }}
+                                                    transition={{ duration: 0.6 }}
+                                                    className="absolute inset-0 bg-white z-20 pointer-events-none"
+                                                />
+                                            )}
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* ──── ABA AGRICULTURA (COMPRAR) ──── */}
+                    {activeTab === 'agricultura' && (
+                        <motion.div
+                            key="agricultura"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{ duration: 0.2 }}
+                            className="space-y-4"
+                        >
+                            <h2 className="text-lg font-black text-white/60 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span className="text-2xl">🌱</span> Central Agrícola
+                            </h2>
+
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                                {[
+                                    { id: 'Wheat Seeds', name: 'Sementes de Trigo', img: '/Wheat_Seeds.webp', cost: 10, type: 'semente' },
+                                    { id: 'Carrot', name: 'Cenoura (Semente)', img: '/Carrot.webp', cost: 25, type: 'semente' },
+                                    { id: 'Potato', name: 'Batata (Semente)', img: '/Potato.webp', cost: 25, type: 'semente' },
+                                    { id: 'Beetroot Seeds', name: 'Sementes de Beterraba', img: '/Beetroot_Seeds.webp', cost: 15, type: 'semente' },
+                                    { id: 'Nether Wart', name: 'Fungo do Nether', img: '/Nether_Wart.webp', cost: 100, type: 'semente' },
+                                    { id: 'Chorus Fruit', name: 'Fruta do Coro', img: '/Chorus_Fruit.webp', cost: 200, type: 'semente' },
+                                    { id: 'Golden Apple Seed', name: 'Semente Mág. M.D.', img: '/Golden_Apple.webp', cost: 1000, type: 'semente' },
+                                    { id: 'Bone Meal', name: 'Farinha de Osso', img: '/Bone_Meal.webp', cost: 50, type: 'fertilizante' },
+                                    { id: 'Magic Fertilizer', name: 'Adubo Mágico', img: '/Bone_Meal.webp', cost: 500, type: 'fertilizante' }, // Placeholder image
+                                ].map((item) => {
+                                    return (
+                                        <motion.div
+                                            key={item.id}
+                                            whileHover={{ scale: 1.03 }}
+                                            className="relative overflow-hidden bg-linear-to-br from-stone-800/80 to-stone-900/80 border border-stone-700/50 p-4 rounded-xl flex flex-col items-center group hover:border-lime-500/40 transition-all justify-between text-center"
+                                        >
+                                            <div className="absolute top-2 right-2 flex text-xs font-black bg-stone-900/50 px-2 py-0.5 rounded text-stone-400">
+                                                Possui: {inventory[item.id] || 0}
+                                            </div>
+
+                                            <div className="w-16 h-16 bg-stone-900/80 rounded-lg flex items-center justify-center p-2 border border-stone-700/50 mt-4 mb-3 shrink-0 group-hover:scale-110 transition-transform">
+                                                <img
+                                                    src={item.img}
+                                                    alt={item.name}
+                                                    className={`w-full h-full object-contain ${item.id === 'Magic Fertilizer' ? 'hue-rotate-180 drop-shadow-[0_0_10px_purple]' : 'drop-shadow-md'}`}
+                                                    onError={(e) => (e.currentTarget.style.display = 'none')}
+                                                />
+                                            </div>
+
+                                            <div className="mb-4">
+                                                <h4 className="font-bold text-white text-sm leading-tight">{item.name}</h4>
+                                                <p className="text-[10px] text-stone-400 font-black uppercase mt-1 tracking-wider">{item.type}</p>
+                                            </div>
+
+                                            <motion.button
+                                                onClick={() => {
+                                                    if (isDebugMode || mineCoins >= item.cost) {
+                                                        if (!isDebugMode) setMineCoins(prev => prev - item.cost);
+                                                        setInventory(prev => ({ ...prev, [item.id]: (prev[item.id] || 0) + 1 }));
+                                                        setPurchaseFlash(item.id);
+                                                        setTimeout(() => setPurchaseFlash(null), 600);
+                                                    }
+                                                }}
+                                                disabled={!isDebugMode && mineCoins < item.cost}
+                                                className={`w-full py-2 rounded-xl font-black text-sm transition-all flex items-center justify-center gap-1 ${(isDebugMode || mineCoins >= item.cost)
+                                                    ? 'bg-linear-to-r from-lime-500 to-green-600 text-white shadow-lg shadow-lime-500/20 hover:shadow-lime-500/40 active:scale-95'
+                                                    : 'bg-stone-800 text-stone-500 cursor-not-allowed'
+                                                    }`}
+                                                whileTap={{ scale: 0.95 }}
+                                            >
+                                                Comprar {isDebugMode ? 0 : item.cost} MC
+                                            </motion.button>
+                                            
+                                            {purchaseFlash === item.id && (
                                                 <motion.div
                                                     initial={{ opacity: 0.8 }}
                                                     animate={{ opacity: 0 }}

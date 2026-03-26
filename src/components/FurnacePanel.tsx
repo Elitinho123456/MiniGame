@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { furnaceRecipes, blastFurnaceRecipes, fuelItems, nameMap } from '../assets/consts';
+import { useGameStore } from '../store/useGameStore';
 
 export type SmeltingState = {
     type: 'furnace' | 'blast_furnace';
@@ -91,6 +92,11 @@ export default function FurnacePanel({
                 ...prev,
                 [furnaceState.output]: (prev[furnaceState.output] || 0) + furnaceState.readyCount
             }));
+
+            const recipe = recipes[furnaceState.input];
+            if (recipe && recipe.exp) {
+                useGameStore.getState().addPlayerXp(recipe.exp * furnaceState.readyCount);
+            }
 
             // If still melting something, keep it running but reset readyCount
             if (furnaceState.progress > 0 && furnaceState.progress < furnaceState.totalTime) {

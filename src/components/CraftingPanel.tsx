@@ -34,6 +34,7 @@ export default function CraftingPanel({
     const [isCraftingOpen, setIsCraftingOpen] = useState<boolean>(false);
     const [activeSection, setActiveSection] = useState<'manual' | 'bancada'>('manual');
     const [selectedToolTiers, setSelectedToolTiers] = useState<Record<string, number>>({});
+    const [craftMultiplier, setCraftMultiplier] = useState<number | 'max'>(1);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -70,20 +71,51 @@ export default function CraftingPanel({
             alert('Você já está craftando um item!');
             return;
         }
-        if (!canAfford(recipe.cost)) {
+        
+        let actualAmount = typeof craftMultiplier === 'number' ? craftMultiplier : 1;
+        if (craftMultiplier === 'max') {
+            let maxCount = Infinity;
+            if (isDebugMode) {
+                maxCount = 100;
+            } else {
+                for (const [res, count] of Object.entries(recipe.cost)) {
+                    const available = inventory[res] || 0;
+                    const possible = Math.floor(available / (count as number));
+                    if (possible < maxCount) maxCount = possible;
+                }
+            }
+            if (maxCount === 0 || maxCount === Infinity) {
+                alert('Recursos insuficientes!');
+                return;
+            }
+            actualAmount = maxCount;
+        }
+
+        const cost: Record<string, number> = {};
+        for (const [res, count] of Object.entries(recipe.cost)) {
+            cost[res] = (count as number) * actualAmount;
+        }
+
+        if (!canAfford(cost)) {
             alert('Recursos insuficientes!');
             return;
         }
-        deductCost(recipe.cost);
+        deductCost(cost);
 
         let timeMultiplier = 1;
         if (activeUpgrades.includes('upg_crafting_1')) timeMultiplier -= 0.2;
 
+        const multipliedRecipe = {
+            ...recipe,
+            amount: recipe.amount * actualAmount,
+            cost: cost,
+        };
+
         setActiveCraft({
-            customRecipe: recipe,
-            name: recipe.name,
+            customRecipe: multipliedRecipe,
+            name: `${recipe.name} (x${actualAmount})`,
             progress: 0,
-            totalTime: isDebugMode ? 0 : (recipe.craftTime || 2) * timeMultiplier,
+            totalTime: isDebugMode ? 0 : (recipe.craftTime || 2) * actualAmount * timeMultiplier,
         });
     }
 
@@ -156,6 +188,19 @@ export default function CraftingPanel({
                                 Bancada
                             </div>
                         </button>
+                    </div>
+
+                    <div className="flex bg-stone-100 dark:bg-stone-900 justify-center gap-2 py-2 border-b border-stone-300 dark:border-stone-700">
+                        <span className="text-xs font-bold text-stone-500 uppercase flex items-center mr-2">Qtd:</span>
+                        {[1, 5, 10, 'max'].map(val => (
+                            <button
+                                key={val.toString()}
+                                onClick={() => setCraftMultiplier(val as number | 'max')}
+                                className={`px-3 py-1 rounded font-bold text-xs transition-colors ${craftMultiplier === val ? 'bg-emerald-500 text-white shadow-sm' : 'bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-300 dark:hover:bg-stone-700'}`}
+                            >
+                                {val === 'max' ? 'MÁX' : `x${val}`}
+                            </button>
+                        ))}
                     </div>
 
                     <div className="p-4 space-y-3 max-h-100 overflow-y-auto custom-scrollbar">

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Pickaxe, Store, PawPrint, Users, Settings, FileText, LogOut, User, CircleFadingPlus, Gem, Infinity as InfinityIcon } from 'lucide-react';
+import { Pickaxe, Store, PawPrint, Users, Settings, FileText, LogOut, User, CircleFadingPlus, Gem, Infinity as InfinityIcon, Sprout } from 'lucide-react';
 
-export type ActiveTab = 'mining' | 'shop' | 'pets' | 'villagers' | 'accessories' | 'settings' | 'rebirth';
+export type ActiveTab = 'mining' | 'shop' | 'pets' | 'villagers' | 'accessories' | 'settings' | 'rebirth' | 'farming';
 
 interface SidebarProps {
     activeTab?: ActiveTab;
@@ -19,6 +19,7 @@ export default function Sidebar({ activeTab, setActiveTab, isLanding = false, re
         { id: 'mining', label: 'Mineração', icon: <Pickaxe size={20} /> },
         { id: 'shop', label: 'Loja', icon: <Store size={20} /> },
         { id: 'pets', label: 'Pets', icon: <PawPrint size={20} /> },
+        { id: 'farming', label: 'Agricultura', icon: <Sprout size={20} /> },
         { id: 'villagers', label: 'Aldeões', icon: <Users size={20} /> },
         { id: 'accessories', label: 'Acessórios', icon: <Gem size={20} /> },
         { id: 'settings', label: 'Configurações', icon: <Settings size={20} /> },
